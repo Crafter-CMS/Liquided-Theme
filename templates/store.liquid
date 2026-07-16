@@ -1,0 +1,148 @@
+<!-- MAĞAZA ANA SAYFASI -->
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-12">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">Mağaza</span>
+  </div>
+
+  <!-- Mağaza Karşılama Banner -->
+  <div class="w-full bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
+    <div class="flex-grow z-10">
+      <h1 class="text-3xl md:text-5xl font-black text-gray-900 mb-3 tracking-tight">
+        {{ settings.store.banner_title | default: 'Mağazaya Hoş Geldiniz!' }}
+      </h1>
+      <p class="text-lg text-gray-500 font-medium max-w-3xl">
+        {{
+          settings.store.banner_description
+          | default: 'Sunucumuza destek olmak ve harika avantajlar elde etmek için kategorilerden birini seçin.'
+        }}
+      </p>
+    </div>
+    {% if settings.store.banner_image %}
+      <div class="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none hidden md:block">
+        <div class="absolute inset-0 bg-gradient-to-r from-white to-transparent z-10"></div>
+        <img src="{{ settings.store.banner_image }}" class="w-full h-full object-cover">
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Kategoriler (Sunucular) Başlığı -->
+  <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-6">Kategoriler</h3>
+
+  <!-- SUNUCU KARTLARI GRID -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% if servers and servers.size > 0 %}
+      {% for server in servers %}
+        <!-- Sunucu Kartı (Dinamik) -->
+        <a
+          href="/store/{{ server.slug }}"
+          class="relative w-full aspect-[2/1] md:h-[160px] md:aspect-auto rounded-3xl overflow-hidden group shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 block"
+        >
+          {% if server.image != blank %}
+            <img
+              src="{{ server.image }}"
+              alt="{{ server.name }}"
+              class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            >
+          {% else %}
+            <div class="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-200"></div>
+          {% endif %}
+
+          <!-- Yazı Okunabilirliği İçin İnce Gradyan -->
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent mix-blend-multiply group-hover:opacity-80 transition-opacity duration-300"
+          ></div>
+
+          <!-- Sunucu İsmi -->
+          <div class="relative z-10 w-full h-full flex items-center p-6 md:p-8">
+            <h4 class="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-lg group-hover:text-green-300 transition-colors">
+              {{ server.name | replace: ' ', '<br>' }}
+            </h4>
+          </div>
+        </a>
+      {% endfor %}
+    {% else %}
+      <!-- MOCKUP: Eğer henüz sunucu eklenmediyse görseldeki gibi sahte kartlar çıksın -->
+      <a
+        href="#"
+        class="relative w-full aspect-[2/1] rounded-3xl overflow-hidden group shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <img
+          src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop"
+          class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+        >
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-600/90 to-green-900/90"></div>
+
+        <div class="relative z-10 w-full h-full flex items-center p-6 gap-4">
+          <div class="w-24 h-24 shrink-0 rounded-full bg-white/20 border-4 border-white backdrop-blur-md flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="text-right flex-grow">
+            <h4 class="text-3xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-md">
+              REBORN<br>
+              SKYBLOCK
+            </h4>
+          </div>
+        </div>
+      </a>
+
+      <a
+        href="#"
+        class="relative w-full aspect-[2/1] rounded-3xl overflow-hidden group shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <img
+          src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop"
+          class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+        >
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-600/90 to-green-900/90"></div>
+
+        <div class="relative z-10 w-full h-full flex items-center p-6 gap-4">
+          <div class="w-24 h-24 shrink-0 rounded-full bg-white/20 border-4 border-white backdrop-blur-md flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="text-right flex-grow">
+            <h4 class="text-3xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-md">
+              TEK<br>
+              BLOK
+            </h4>
+          </div>
+        </div>
+      </a>
+
+      <a
+        href="#"
+        class="relative w-full aspect-[2/1] rounded-3xl overflow-hidden group shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+      >
+        <img
+          src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop"
+          class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+        >
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-600/90 to-green-900/90"></div>
+
+        <div class="relative z-10 w-full h-full flex items-center p-6 gap-4">
+          <div class="w-24 h-24 shrink-0 rounded-full bg-white/20 border-4 border-white backdrop-blur-md flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="text-right flex-grow">
+            <h4 class="text-3xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-md">
+              SURVIVAL<br>
+              ATLAS
+            </h4>
+          </div>
+        </div>
+      </a>
+    {% endif %}
+  </div>
+</div>

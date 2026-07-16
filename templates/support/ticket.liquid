@@ -1,0 +1,395 @@
+<div class="container max-w-[1200px] mx-auto px-4 mt-8 mb-24 space-y-8">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <a href="/support" class="hover:text-primary transition-colors">Destek Merkezi</a>
+    <span>/</span>
+    <span class="text-gray-900 line-clamp-1 max-w-[200px]">{{ ticket.title }}</span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
+    <!-- Main Content: Messages -->
+    <main class="space-y-6">
+      <!-- Ticket Header -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <h1 class="text-2xl font-black text-gray-900">{{ ticket.title }}</h1>
+          <div class="flex-shrink-0">
+            {% if ticket.status == 'OPEN' %}
+              <span class="px-3 py-1.5 bg-green-50 text-green-700 rounded-xl text-sm font-bold border border-green-200"
+                >Açık</span
+              >
+            {% elsif ticket.status == 'REPLIED' %}
+              <span class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold border border-blue-200"
+                >Yanıtlandı</span
+              >
+            {% elsif ticket.status == 'CLOSED' %}
+              <span class="px-3 py-1.5 bg-gray-50 text-gray-600 rounded-xl text-sm font-bold border border-gray-200"
+                >Kapalı</span
+              >
+            {% else %}
+              <span class="px-3 py-1.5 bg-gray-50 text-gray-600 rounded-xl text-sm font-bold border border-gray-200">
+                {{- ticket.status -}}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-sm font-bold text-gray-500">
+          Talep ID: <span class="uppercase tracking-wider">#{{ ticket.id | slice: 0, 8 }}</span>
+        </div>
+      </div>
+
+      <!-- Messages Thread -->
+      <div class="space-y-6">
+        {% for message in ticket.messages %}
+          {% assign isCustomer = false %}
+          {% if message.senderId == customer.id %}
+            {% assign isCustomer = true %}
+          {% endif %}
+
+          <div class="flex gap-4 {% if isCustomer %}flex-row-reverse{% endif %}">
+            <!-- Avatar -->
+            <div class="flex-shrink-0">
+              <img
+                src="https://mc-heads.net/avatar/{{ message.sender.username }}/48"
+                class="w-12 h-12 rounded-xl border-2 {% if isCustomer %}border-primary/20{% else %}border-gray-200{% endif %}"
+                alt="{{ message.sender.username }}"
+              >
+            </div>
+
+            <!-- Bubble -->
+            <div class="max-w-[85%]">
+              <div class="flex items-center gap-2 mb-1.5 {% if isCustomer %}justify-end{% endif %}">
+                <span class="text-sm font-bold {% if isCustomer %}text-primary{% else %}text-gray-900{% endif %}">
+                  {{ message.sender.username }}
+                </span>
+                <span class="text-xs font-semibold text-gray-400" id="date-{{ forloop.index }}"></span>
+              </div>
+
+              <div class="p-5 rounded-2xl {% if isCustomer %}bg-primary/5 text-gray-900 border border-primary/10 rounded-tr-sm{% else %}bg-white border border-gray-100 shadow-sm rounded-tl-sm{% endif %}">
+                <div class="prose prose-sm max-w-none text-gray-800 break-words lexical-content">
+                  {{ message.content | lexical_html }}
+                </div>
+              </div>
+            </div>
+
+            <script>
+              document.getElementById('date-{{ forloop.index }}').innerText = new Date(
+                '{{ message.createdAt }}'
+              ).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+            </script>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Reply Form -->
+      {% if ticket.status != 'CLOSED' %}
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mt-8">
+          <h3 class="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+            </svg>
+            Yanıt Yaz
+          </h3>
+          <form id="replyForm" class="space-y-4">
+            <div class="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all flex flex-col">
+              <!-- Toolbar -->
+              <div class="flex items-center gap-1 p-2 bg-white border-b border-gray-200">
+                <button
+                  type="button"
+                  id="bold-btn"
+                  class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                  title="Kalın"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  id="italic-btn"
+                  class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                  title="İtalik"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l-4 16M6 16l4-16"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  id="underline-btn"
+                  class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                  title="Altı Çizili"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 3v7a6 6 0 006 6 6 6 0 006-6V3m-6 18h6"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  id="strike-btn"
+                  class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                  title="Üstü Çizili"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M8 6h8a2 2 0 010 4H8a2 2 0 010-4zM8 14h8a2 2 0 000 4H8a2 2 0 000-4z"/>
+                  </svg>
+                </button>
+                <div class="w-px h-6 bg-gray-200 mx-1"></div>
+                <button
+                  type="button"
+                  id="left-btn"
+                  class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                  title="Sola Hizala"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  id="center-btn"
+                  class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                  title="Ortala"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M4 18h16"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  id="right-btn"
+                  class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                  title="Sağa Hizala"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M10 12h10M4 18h16"/>
+                  </svg>
+                </button>
+              </div>
+              <div
+                id="lexical-editor"
+                class="min-h-[150px] p-5 outline-none text-sm text-gray-900 font-sans"
+                contenteditable="true"
+              ></div>
+            </div>
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                class="bg-primary text-white font-bold rounded-xl px-8 py-3.5 hover:brightness-110 transition-all shadow-md shadow-primary/30 flex items-center justify-center gap-2"
+              >
+                Gönder
+              </button>
+            </div>
+          </form>
+        </div>
+      {% else %}
+        <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6 text-center mt-8">
+          <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <p class="font-bold text-gray-600">Bu destek talebi kapatılmış.</p>
+          <p class="text-sm font-medium text-gray-500 mt-1">Kapatılan taleplere yeni mesaj gönderilemez.</p>
+        </div>
+      {% endif %}
+    </main>
+
+    <!-- Sidebar: Info -->
+    <aside class="space-y-6">
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b border-gray-100">Talep Detayları</h3>
+
+        <div class="space-y-4">
+          <div>
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Oluşturan</div>
+            <div class="flex items-center gap-2 font-bold text-gray-900">
+              <img
+                src="https://mc-heads.net/avatar/{{ ticket.createdByUser.username }}/24"
+                class="w-6 h-6 rounded-md"
+                alt=""
+              >
+              {{ ticket.createdByUser.username }}
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Oluşturulma Tarihi</div>
+            <div class="font-semibold text-sm text-gray-700" id="ticket-created-at"></div>
+          </div>
+
+          <div>
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Son Güncelleme</div>
+            <div class="font-semibold text-sm text-gray-700" id="ticket-updated-at"></div>
+          </div>
+
+          {% if ticket.category %}
+            <div>
+              <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Kategori</div>
+              <div class="font-semibold text-sm text-gray-700">{{ ticket.category.name }}</div>
+            </div>
+          {% endif %}
+
+          <div>
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Atanan Yetkililer</div>
+            {% if ticket.assignedUsers and ticket.assignedUsers.size > 0 %}
+              <div class="flex flex-wrap gap-2 mt-2">
+                {% for staff in ticket.assignedUsers %}
+                  <div class="flex items-center gap-1.5 px-2 py-1 bg-gray-50 rounded-lg border border-gray-100">
+                    <img src="https://mc-heads.net/avatar/{{ staff.username }}/16" class="w-4 h-4 rounded-sm" alt="">
+                    <span class="text-xs font-bold text-gray-700">{{ staff.username }}</span>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-sm font-semibold text-gray-400 mt-1">Henüz yetkili atanmadı.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<style>
+  .editor-text-bold {
+    font-weight: bold;
+  }
+  .editor-text-italic {
+    font-style: italic;
+  }
+  .editor-text-underline {
+    text-decoration: underline;
+  }
+  .editor-text-strikethrough {
+    text-decoration: line-through;
+  }
+  .editor-text-underlineStrikethrough {
+    text-decoration: underline line-through;
+  }
+</style>
+
+<script type="module">
+  import { createEditor, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND } from 'https://esm.sh/lexical@0.14.5';
+  import { registerRichText } from 'https://esm.sh/@lexical/rich-text@0.14.5';
+
+  // Format sidebar dates
+  document.getElementById('ticket-created-at').innerText = new Date('{{ ticket.createdAt }}').toLocaleDateString(
+    'tr-TR',
+    { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+  );
+  document.getElementById('ticket-updated-at').innerText = new Date('{{ ticket.updatedAt }}').toLocaleDateString(
+    'tr-TR',
+    { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+  );
+
+  window.lexicalContentJSON = null;
+
+  const myTheme = {
+    text: {
+      bold: 'editor-text-bold',
+      italic: 'editor-text-italic',
+      underline: 'editor-text-underline',
+      strikethrough: 'editor-text-strikethrough',
+      underlineStrikethrough: 'editor-text-underlineStrikethrough',
+    },
+  };
+
+  const config = {
+    namespace: 'SupportReplyTicket',
+    theme: myTheme,
+    onError: (error) => {
+      console.error('Lexical Hatası:', error);
+    },
+  };
+
+  const editor = createEditor(config);
+  const editorElement = document.getElementById('lexical-editor');
+
+  if (editorElement) {
+    editor.setRootElement(editorElement);
+
+    // Kayıt
+    registerRichText(editor);
+
+    // Toolbars
+    document.getElementById('bold-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+    });
+    document.getElementById('italic-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+    });
+    document.getElementById('underline-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+    });
+    document.getElementById('strike-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
+    });
+
+    document.getElementById('left-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
+    });
+    document.getElementById('center-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
+    });
+    document.getElementById('right-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
+    });
+
+    editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        window.lexicalContentJSON = editorState.toJSON();
+      });
+    });
+  }
+
+  // Reply Form Submit
+  document.getElementById('replyForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!window.lexicalContentJSON || !window.lexicalContentJSON.root.children.length) {
+      window.showToast?.('Lütfen bir mesaj yazın.', 'error');
+      return;
+    }
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = 'Gönderiliyor...';
+
+    const ticketId = '{{ ticket.id }}';
+
+    try {
+      const res = await fetch(`/api/storefront/v2/tickets/${ticketId}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: window.lexicalContentJSON }),
+      });
+      const result = await res.json();
+
+      if (result.success || res.ok) {
+        window.showToast?.('Yanıtınız başarıyla gönderildi!', 'success');
+        window.location.reload();
+      } else {
+        window.showToast?.(result.message || 'Bir hata oluştu.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    } catch (err) {
+      window.showToast?.('Bağlantı hatası.', 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
+</script>

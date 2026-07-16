@@ -1,0 +1,242 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 min-h-[50vh]">
+  <!-- Breadcrumb -->
+  <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100 mb-8">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">Cezalar</span>
+  </div>
+
+  <!-- Başlık -->
+  <div class="mb-12">
+    <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3">Cezalar</h1>
+    <p class="text-gray-500 font-medium max-w-lg leading-relaxed">
+      Sunucu kurallarını ihlal eden oyuncuların aldığı cezaları buradan görüntüleyebilir ve sorgulayabilirsiniz.
+    </p>
+  </div>
+
+  <!-- Kategori & İstatistik Kartları -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+    <!-- Yasaklamalar (Ban) -->
+    <a
+      href="/punishments/ban"
+      class="group bg-white rounded-3xl p-6 shadow-sm hover:shadow-lg border border-gray-100 transition-all duration-300 hover:-translate-y-1 flex flex-col relative overflow-hidden"
+    >
+      <div
+        class="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-bl-[100px] -mr-8 -mt-8 transition-transform group-hover:scale-110"
+      ></div>
+      <div class="flex items-start justify-between mb-6 relative z-10">
+        <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 border border-red-100 group-hover:bg-red-500 group-hover:text-white transition-colors shadow-sm">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+          </svg>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-bold text-gray-400 mb-1">Toplam</div>
+          <div id="stat-ban" class="text-3xl font-black text-gray-900">0</div>
+        </div>
+      </div>
+      <div class="relative z-10 mt-auto">
+        <h3 class="text-xl font-bold text-gray-900 mb-1 group-hover:text-red-500 transition-colors">Yasaklamalar</h3>
+        <p class="text-sm font-medium text-gray-500">Sunucudan uzaklaştırılan oyuncular</p>
+      </div>
+    </a>
+
+    <!-- Susturulmalar (Mute) -->
+    <a
+      href="/punishments/mute"
+      class="group bg-white rounded-3xl p-6 shadow-sm hover:shadow-lg border border-gray-100 transition-all duration-300 hover:-translate-y-1 flex flex-col relative overflow-hidden"
+    >
+      <div
+        class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-[100px] -mr-8 -mt-8 transition-transform group-hover:scale-110"
+      ></div>
+      <div class="flex items-start justify-between mb-6 relative z-10">
+        <div class="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 border border-purple-100 group-hover:bg-purple-500 group-hover:text-white transition-colors shadow-sm">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clip-rule="evenodd"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+          </svg>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-bold text-gray-400 mb-1">Toplam</div>
+          <div id="stat-mute" class="text-3xl font-black text-gray-900">0</div>
+        </div>
+      </div>
+      <div class="relative z-10 mt-auto">
+        <h3 class="text-xl font-bold text-gray-900 mb-1 group-hover:text-purple-500 transition-colors">
+          Susturulmalar
+        </h3>
+        <p class="text-sm font-medium text-gray-500">Sohbet erişimi engellenen oyuncular</p>
+      </div>
+    </a>
+
+    <!-- Uyarılar (Warning) -->
+    <a
+      href="/punishments/warning"
+      class="group bg-white rounded-3xl p-6 shadow-sm hover:shadow-lg border border-gray-100 transition-all duration-300 hover:-translate-y-1 flex flex-col relative overflow-hidden"
+    >
+      <div
+        class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-bl-[100px] -mr-8 -mt-8 transition-transform group-hover:scale-110"
+      ></div>
+      <div class="flex items-start justify-between mb-6 relative z-10">
+        <div class="w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-500 border border-yellow-100 group-hover:bg-yellow-500 group-hover:text-white transition-colors shadow-sm">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-bold text-gray-400 mb-1">Toplam</div>
+          <div id="stat-warning" class="text-3xl font-black text-gray-900">0</div>
+        </div>
+      </div>
+      <div class="relative z-10 mt-auto">
+        <h3 class="text-xl font-bold text-gray-900 mb-1 group-hover:text-yellow-500 transition-colors">Uyarılar</h3>
+        <p class="text-sm font-medium text-gray-500">Kuralları ihlal ettiği için uyarılan oyuncular</p>
+      </div>
+    </a>
+  </div>
+
+  <!-- Son Cezalar Listesi -->
+  <div class="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
+    <div class="flex items-center justify-between mb-8">
+      <h3 class="text-xl font-black text-gray-900 flex items-center gap-3">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Son Verilen Cezalar
+      </h3>
+      <a href="/punishments/ban" class="text-sm font-bold text-primary hover:text-blue-600 transition-colors"
+        >Tümünü Gör &rarr;</a
+      >
+    </div>
+
+    <div id="punishments-list" class="space-y-4">
+      <div class="py-12 text-center text-gray-400 font-bold flex flex-col items-center justify-center">
+        <svg class="w-8 h-8 animate-spin mb-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Cezalar Yükleniyor...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Context'ten Gelen Veriyi JS'e Aktar -->
+<script>
+  window.SERVER_PUNISHMENTS_DATA = {{ punishments | json }};
+</script>
+
+<!-- Vanilla JS Data Fetching -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const listContainer = document.getElementById('punishments-list');
+    const statBan = document.getElementById('stat-ban');
+    const statMute = document.getElementById('stat-mute');
+    const statWarning = document.getElementById('stat-warning');
+
+    // Tarih Formatlayıcı (Format Time Ago)
+    function formatTimeAgo(dateStr) {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const seconds = Math.floor((now - date) / 1000);
+
+      let interval = seconds / 31536000;
+      if (interval > 1) return Math.floor(interval) + ' yıl önce';
+      interval = seconds / 2592000;
+      if (interval > 1) return Math.floor(interval) + ' ay önce';
+      interval = seconds / 86400;
+      if (interval > 1) return Math.floor(interval) + ' gün önce';
+      interval = seconds / 3600;
+      if (interval > 1) return Math.floor(interval) + ' saat önce';
+      interval = seconds / 60;
+      if (interval > 1) return Math.floor(interval) + ' dakika önce';
+      return Math.floor(seconds) + ' saniye önce';
+    }
+
+    try {
+      const data = window.SERVER_PUNISHMENTS_DATA || {};
+      
+      // Eğer modül aktif değilse veya yapılandırılmamışsa
+      if (data.statusCode === 400) {
+        listContainer.innerHTML = `
+          <div class="py-12 text-center text-gray-500 font-bold bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+            Cezalar modülü şu anda aktif değil.
+          </div>
+        `;
+        statBan.textContent = '-';
+        statMute.textContent = '-';
+        statWarning.textContent = '-';
+        return;
+      }
+
+      const punishments = data.punishments || data.data?.punishments || data.data || [];
+
+      // Calculate Stats
+      const banCount = punishments.filter((p) => p.punishmentType === 'BAN' || p.punishmentType === 'TEMP_BAN').length;
+      const muteCount = punishments.filter(
+        (p) => p.punishmentType === 'MUTE' || p.punishmentType === 'TEMP_MUTE'
+      ).length;
+      const warningCount = punishments.filter(
+        (p) => p.punishmentType === 'WARNING' || p.punishmentType === 'TEMP_WARNING'
+      ).length;
+
+      statBan.textContent = banCount;
+      statMute.textContent = muteCount;
+      statWarning.textContent = warningCount;
+
+      if (punishments.length === 0) {
+        listContainer.innerHTML = `
+          <div class="py-12 text-center text-gray-500 font-bold bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+            Henüz verilmiş bir ceza bulunmuyor.
+          </div>
+        `;
+        return;
+      }
+
+      // Render List
+      listContainer.innerHTML = '';
+      punishments.slice(0, 6).forEach((p) => {
+        const isBan = p.punishmentType.includes('BAN');
+        const isMute = p.punishmentType.includes('MUTE');
+        const badgeColor = isBan
+          ? 'bg-red-100 text-red-600 border-red-200'
+          : isMute
+          ? 'bg-purple-100 text-purple-600 border-purple-200'
+          : 'bg-yellow-100 text-yellow-600 border-yellow-200';
+
+        const html = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-primary/30 transition-colors gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden shrink-0">
+                <img src="https://mc-heads.net/avatar/${p.name}/48" alt="${p.name}" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h4 class="font-black text-gray-900">${p.name}</h4>
+                <p class="text-sm font-medium text-gray-500 line-clamp-1">${p.reason || 'Sebep belirtilmedi'}</p>
+              </div>
+            </div>
+            
+            <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0">
+              <div class="px-3 py-1 rounded-lg text-xs font-bold border ${badgeColor} mb-0 sm:mb-1 uppercase tracking-wide">
+                ${p.punishmentType.replace('_', ' ')}
+              </div>
+              <div class="text-xs font-bold text-gray-400">
+                ${formatTimeAgo(p.start)}
+              </div>
+            </div>
+          </div>
+        `;
+        listContainer.insertAdjacentHTML('beforeend', html);
+      });
+    } catch (err) {
+      console.error('Cezalar yüklenirken hata oluştu:', err);
+      listContainer.innerHTML = `
+        <div class="py-12 text-center text-red-500 font-bold bg-red-50 rounded-2xl border border-red-100">
+          Cezalar yüklenirken bir hata oluştu.
+        </div>
+      `;
+    }
+  });
+</script>

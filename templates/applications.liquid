@@ -1,0 +1,183 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-8 min-h-[60vh]">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">Başvurular</span>
+  </div>
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-black text-gray-900 tracking-tight">Başvuru Merkezi</h1>
+    <p class="text-gray-500 mt-2">
+      Mevcut pozisyonlar için başvuru yapabilir veya mevcut başvurularınızı takip edebilirsiniz.
+    </p>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="flex bg-white rounded-2xl p-1 w-full max-w-sm border border-gray-100 shadow-sm mb-6">
+    <button
+      class="tab-btn flex-1 text-center py-2.5 rounded-xl font-bold text-sm transition-all bg-gray-100 text-gray-900"
+      data-target="tab-forms"
+    >
+      Mevcut Formlar
+    </button>
+    <button
+      class="tab-btn flex-1 text-center py-2.5 rounded-xl font-bold text-sm transition-all text-gray-500 hover:text-gray-900"
+      data-target="tab-my-apps"
+    >
+      Başvurularım
+    </button>
+  </div>
+
+  <!-- Mevcut Formlar (Aktif Formlar) -->
+  <div id="tab-forms" class="tab-content block">
+    {% if staffForms.size == 0 %}
+      <div class="bg-white border border-gray-100 rounded-3xl p-12 text-center shadow-sm">
+        <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-black text-gray-900 mb-2">Form Bulunamadı</h3>
+        <p class="text-gray-500 font-medium">Şu anda başvurabileceğiniz aktif bir form bulunmuyor.</p>
+      </div>
+    {% else %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for form in staffForms %}
+          <a
+            href="/applications/{{ form.slug }}"
+            class="group block bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <h3 class="text-xl font-black text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
+                {{ form.title }}
+              </h3>
+              <svg
+                class="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-gray-500 line-clamp-2 mb-6">{{ form.description }}</p>
+
+            <div class="flex items-center justify-between text-xs font-bold mt-auto">
+              <div class="flex items-center gap-3 text-gray-400">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                  </svg>
+                  {{ form.inputs.size }} Alan
+                </span>
+              </div>
+              {% if form.isActive %}
+                <span class="px-2.5 py-1 bg-green-50 text-green-600 rounded-lg border border-green-100">Aktif</span>
+              {% else %}
+                <span class="px-2.5 py-1 bg-gray-50 text-gray-500 rounded-lg border border-gray-200">Pasif</span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Başvurularım -->
+  <div id="tab-my-apps" class="tab-content hidden">
+    {% if myApplications.size == 0 %}
+      <div class="bg-white border border-gray-100 rounded-3xl p-12 text-center shadow-sm">
+        <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-black text-gray-900 mb-2">Başvuru Yok</h3>
+        <p class="text-gray-500 font-medium">Henüz herhangi bir forma başvuru yapmamışsınız.</p>
+      </div>
+    {% else %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for app in myApplications %}
+          <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col h-full">
+            <h3 class="text-xl font-black text-gray-900 mb-4 line-clamp-1">{{ app.form.title }}</h3>
+
+            <div class="space-y-4 flex-1">
+              {% for value in app.values %}
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">
+                    {{- value.inputId -}}
+                  </span>
+                  <span class="text-sm font-medium text-gray-900 bg-gray-50 px-3 py-1.5 rounded-lg inline-block w-full border border-gray-100">
+                    {{- value.value -}}
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-50">
+              <span class="text-xs font-bold text-gray-400">{{ app.createdAt | date: '%d.%m.%Y' }}</span>
+
+              {% if app.status == 'PENDING' or app.status == 'pending' %}
+                <span class="px-2.5 py-1 bg-yellow-50 text-yellow-600 rounded-lg border border-yellow-100 text-xs font-bold"
+                  >Bekliyor</span
+                >
+              {% elsif app.status == 'APPROVED' or app.status == 'approved' %}
+                <span class="px-2.5 py-1 bg-green-50 text-green-600 rounded-lg border border-green-100 text-xs font-bold"
+                  >Onaylandı</span
+                >
+              {% elsif app.status == 'REJECTED' or app.status == 'rejected' %}
+                <span class="px-2.5 py-1 bg-red-50 text-red-600 rounded-lg border border-red-100 text-xs font-bold"
+                  >Reddedildi</span
+                >
+              {% else %}
+                <span class="px-2.5 py-1 bg-gray-50 text-gray-600 rounded-lg border border-gray-100 text-xs font-bold">
+                  {{- app.status | capitalize -}}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btns = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        // Reset buttons
+        btns.forEach((b) => {
+          b.classList.remove('bg-gray-100', 'text-gray-900');
+          b.classList.add('text-gray-500');
+        });
+
+        // Active button
+        btn.classList.add('bg-gray-100', 'text-gray-900');
+        btn.classList.remove('text-gray-500');
+
+        // Toggle content
+        contents.forEach((c) => {
+          c.classList.add('hidden');
+          c.classList.remove('block');
+        });
+
+        const targetId = btn.getAttribute('data-target');
+        const target = document.getElementById(targetId);
+        if (target) {
+          target.classList.remove('hidden');
+          target.classList.add('block');
+        }
+      });
+    });
+  });
+</script>

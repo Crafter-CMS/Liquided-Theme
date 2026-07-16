@@ -1,0 +1,525 @@
+{% assign displayUser = profileUser %}
+{% if profileUser.statusCode or profileUser == blank %}
+  {% assign displayUser = customer %}
+{% endif %}
+
+{% assign isOwnProfile = false %}
+{% if displayUser.username == customer.username %}
+  {% assign isOwnProfile = true %}
+{% endif %}
+
+{% if displayUser.username %}
+  <div class="container max-w-[1350px] mx-auto px-4 sm:px-6 py-8 sm:py-12 min-h-[60vh]">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- Sol Kolon: Profil Bilgileri ve Navigasyon -->
+      <div class="lg:col-span-4 space-y-6">
+        <!-- Profil Kartı -->
+        <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm relative overflow-hidden flex flex-col items-center text-center">
+          <!-- Dekoratif Arkaplan -->
+          <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -mr-8 -mt-8"></div>
+
+          <div class="relative w-32 h-32 mb-6">
+            <div class="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
+            <img
+              src="https://mc-heads.net/avatar/{{ displayUser.username }}/128"
+              alt="{{ displayUser.username }}"
+              class="relative w-full h-full object-cover rounded-2xl shadow-md border-2 border-white"
+            >
+          </div>
+
+          {% if displayUser.role %}
+            <div
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider mb-4 border"
+              style="background-color: {{ displayUser.role.color }}15; color: {{ displayUser.role.color }}; border-color: {{ displayUser.role.color }}30;"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              {{ displayUser.role.name }}
+            </div>
+          {% endif %}
+
+          <h1 class="text-3xl font-black text-gray-900 mb-2">{{ displayUser.username }}</h1>
+
+          <div class="flex items-center justify-center gap-4 text-sm font-medium text-gray-500 mt-2">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              Kayıt: {{ displayUser.createdAt | date: '%d.%m.%Y' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- İstatistikler -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">İstatistikler</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-400">Bakiye</div>
+                  <div class="text-lg font-black text-gray-900">{{ displayUser.balance | default: 0 }} ₺</div>
+                </div>
+              </div>
+            </div>
+            
+            {% if isOwnProfile %}
+            <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-400">Eşyalar</div>
+                  <div class="text-lg font-black text-gray-900">{{ displayUser.chest.size | default: 0 }}</div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Navigasyon (Tab Butonları) -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Menü</h3>
+          <div class="space-y-2 flex flex-col">
+            <button
+              class="tab-btn w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all text-left bg-primary/5 text-primary border-2 border-primary/20"
+              data-target="tab-wall"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+              </svg>
+              Profil Duvarı
+            </button>
+            
+            {% if isOwnProfile %}
+            <button
+              class="tab-btn w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all text-left text-gray-500 hover:bg-gray-50 border-2 border-transparent"
+              data-target="tab-inventory"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              Envanterim
+            </button>
+            <a
+              href="/profile/settings"
+              class="w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all text-left text-gray-500 hover:bg-gray-50 border-2 border-transparent"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              Ayarlar
+            </a>
+            <a
+              href="/logout"
+              class="w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all text-left text-red-500 hover:bg-red-50 border-2 border-transparent"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              Çıkış Yap
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Sağ Kolon: Tab İçerikleri -->
+      <div class="lg:col-span-8">
+        <!-- DUVAR TABI -->
+        <div id="tab-wall" class="tab-content block bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
+          <h2 class="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+            Profil Duvarı
+          </h2>
+
+          <!-- Mesaj Gönderme Kutusu -->
+          {% if customer %}
+          <div class="flex gap-4 mb-8">
+            <div class="w-12 h-12 rounded-xl bg-gray-100 shrink-0 overflow-hidden">
+              <img src="https://mc-heads.net/avatar/{{ customer.username }}/48" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1">
+              <textarea
+                id="wall-message-input"
+                placeholder="Duvarınıza bir şeyler yazın..."
+                class="w-full min-h-[100px] p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none font-medium text-gray-900"
+              ></textarea>
+              <div class="flex justify-end mt-3">
+                <button
+                  id="btn-send-message"
+                  class="px-6 py-2.5 bg-gray-900 hover:bg-black text-white font-bold rounded-xl transition-colors text-sm disabled:opacity-50"
+                >
+                  Gönder
+                </button>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center mb-8">
+            <p class="text-gray-500 font-medium mb-3">Mesaj gönderebilmek için giriş yapmalısınız.</p>
+            <a href="/auth" class="inline-block px-6 py-2 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors">Giriş Yap</a>
+          </div>
+          {% endif %}
+
+          <!-- Duvar Mesajları Listesi -->
+          <div id="wall-messages-list" class="space-y-4">
+            <div class="py-12 text-center text-gray-400 font-bold bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+              Mesajlar Yükleniyor...
+            </div>
+          </div>
+        </div>
+
+        <!-- ENVANTER TABI -->
+        <div
+          id="tab-inventory"
+          class="tab-content hidden bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm"
+        >
+          <h2 class="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            Eşya Envanterim
+          </h2>
+
+          {% if customer.chest.size > 0 %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {% for item in customer.chest %}
+                {% unless item.used %}
+                  <div class="p-4 rounded-2xl border border-gray-100 bg-gray-50 hover:border-primary/30 transition-all flex flex-col items-center text-center group">
+                    <div class="w-16 h-16 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center text-3xl mb-3 group-hover:-translate-y-1 transition-transform">
+                      🎁
+                    </div>
+                    <div class="font-bold text-gray-900 text-sm line-clamp-2 mb-1">{{ item.product.name }}</div>
+                    <div class="text-xs font-bold text-gray-400 mt-auto">{{ item.createdAt | date: '%d.%m.%Y' }}</div>
+                  </div>
+                {% endunless %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="py-12 text-center text-gray-400 font-bold bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+              Envanterinizde hiç eşya bulunmuyor.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    {% if isOwnProfile %}
+      window.SERVER_WALL_MESSAGES = {{ wallMessages | json }};
+    {% else %}
+      window.SERVER_WALL_MESSAGES = [];
+    {% endif %}
+    const isOwnProfile = {{ isOwnProfile | json }};
+    const targetUserId = '{{ displayUser.id }}';
+    const targetUsername = '{{ displayUser.username }}';
+    const currentUsername = '{{ customer.username }}';
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          // Buton stillerini sıfırla
+          tabBtns.forEach((b) => {
+            b.classList.remove('bg-primary/5', 'text-primary', 'border-primary/20');
+            b.classList.add('text-gray-500', 'border-transparent');
+          });
+
+          // Tıklanan butonu aktif et
+          btn.classList.add('bg-primary/5', 'text-primary', 'border-primary/20');
+          btn.classList.remove('text-gray-500', 'border-transparent');
+
+          // İçerikleri gizle
+          tabContents.forEach((c) => c.classList.add('hidden'));
+          tabContents.forEach((c) => c.classList.remove('block'));
+
+          // İlgili içeriği göster
+          const target = document.getElementById(btn.getAttribute('data-target'));
+          if (target) {
+            target.classList.remove('hidden');
+            target.classList.add('block');
+          }
+        });
+      });
+
+      // Duvar Mesajları Logic
+      const wallContainer = document.getElementById('wall-messages-list');
+      const wallInput = document.getElementById('wall-message-input');
+      const btnSend = document.getElementById('btn-send-message');
+
+      function formatTimeAgo(dateStr) {
+        const date = new Date(dateStr);
+        const seconds = Math.floor((new Date() - date) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + ' yıl önce';
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + ' ay önce';
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + ' gün önce';
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + ' saat önce';
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + ' dakika önce';
+        return 'az önce';
+      }
+
+      function renderWallMessages(messages = window.SERVER_WALL_MESSAGES) {
+        if (!targetUserId) return;
+        if (!Array.isArray(messages)) messages = [];
+        
+        try {
+          wallContainer.innerHTML = '';
+          if (messages.length === 0) {
+            wallContainer.innerHTML = `
+              <div class="py-12 text-center text-gray-400 font-bold bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+                Henüz duvarınızda mesaj bulunmuyor.
+              </div>
+            `;
+            return;
+          }
+
+          messages.forEach((msg) => {
+            const isStaff = msg.sender.role && msg.sender.role.name;
+            const hasReplies = msg.replies && msg.replies.length > 0;
+            
+            let repliesHtml = '';
+            if (hasReplies) {
+              repliesHtml += `
+                <div class="mt-2">
+                  <button class="toggle-replies-btn text-xs font-bold text-gray-500 hover:text-primary transition-colors flex items-center gap-1" data-id="${msg.id}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    Yanıtları Göster (${msg.replies.length})
+                  </button>
+                  
+                  <div id="replies-${msg.id}" class="hidden mt-3 ml-8 pl-4 border-l-2 border-primary/20 space-y-3">
+                    ${msg.replies.map(reply => {
+                      const replyStaff = reply.sender.role && reply.sender.role.name;
+                      return `
+                        <div class="flex items-start gap-3">
+                          <div class="w-8 h-8 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden shrink-0">
+                            <img src="https://mc-heads.net/avatar/${reply.sender.username}/32" class="w-full h-full object-cover">
+                          </div>
+                          <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                              <span class="font-bold text-gray-900 text-sm">${reply.sender.username}</span>
+                              ${
+                                replyStaff
+                                  ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-black border uppercase tracking-wider" style="color: ${reply.sender.role.color}; border-color: ${reply.sender.role.color}40; background-color: ${reply.sender.role.color}10;">${reply.sender.role.name}</span>`
+                                  : ''
+                              }
+                              <span class="text-[10px] font-bold text-gray-400 ml-auto">${formatTimeAgo(reply.createdAt)}</span>
+                            </div>
+                            <p class="text-xs font-medium text-gray-600">${reply.content}</p>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `;
+            }
+
+            let replyInputHtml = '';
+            if (currentUsername) {
+              replyInputHtml = `
+                <div id="reply-form-${msg.id}" class="hidden mt-3 ml-8 flex gap-3">
+                  <div class="w-8 h-8 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden shrink-0">
+                    <img src="https://mc-heads.net/avatar/${currentUsername}/32" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1">
+                    <textarea id="reply-input-${msg.id}" placeholder="Yanıtınızı yazın..." class="w-full min-h-[60px] p-3 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none font-medium text-gray-900"></textarea>
+                    <div class="flex justify-end gap-2 mt-2">
+                      <button class="cancel-reply-btn px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-lg transition-colors text-xs" data-id="${msg.id}">İptal</button>
+                      <button class="send-reply-btn px-4 py-1.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors text-xs" data-id="${msg.id}">Yanıtla</button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+
+            const html = `
+              <div class="p-5 rounded-2xl bg-gray-50 border border-gray-100">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden shrink-0">
+                    <img src="https://mc-heads.net/avatar/${msg.sender.username}/40" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                      <span class="font-bold text-gray-900">${msg.sender.username}</span>
+                      ${
+                        isStaff
+                          ? `<span class="px-2 py-0.5 rounded text-[10px] font-black border uppercase tracking-wider" style="color: ${msg.sender.role.color}; border-color: ${msg.sender.role.color}40; background-color: ${msg.sender.role.color}10;">${msg.sender.role.name}</span>`
+                          : ''
+                      }
+                      <span class="text-xs font-bold text-gray-400 ml-auto">${formatTimeAgo(msg.createdAt)}</span>
+                    </div>
+                    <p class="text-sm font-medium text-gray-600 mb-2">${msg.content}</p>
+                    
+                    ${currentUsername ? `
+                      <button class="reply-btn text-xs font-bold text-gray-500 hover:text-primary transition-colors flex items-center gap-1" data-id="${msg.id}">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                        Yanıtla
+                      </button>
+                    ` : ''}
+                    
+                    ${repliesHtml}
+                    ${replyInputHtml}
+                  </div>
+                </div>
+              </div>
+            `;
+            wallContainer.insertAdjacentHTML('beforeend', html);
+          });
+        } catch (err) {
+          console.error(err);
+          wallContainer.innerHTML =
+            '<div class="py-12 text-center text-red-500 font-bold bg-red-50 rounded-2xl">Mesajlar yüklenemedi.</div>';
+        }
+      }
+
+      async function fetchWallMessages() {
+        if (!targetUserId) return;
+        try {
+          const res = await fetch(`/api/storefront/v2/users/${targetUserId}/wall`);
+          const data = await res.json();
+          const messages = data.data || data || [];
+          renderWallMessages(messages);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      // Mesaj Gönderme
+      if (btnSend) {
+        btnSend.addEventListener('click', async () => {
+          const content = wallInput.value.trim();
+          if (!content) return;
+
+          btnSend.disabled = true;
+          btnSend.innerText = 'Gönderiliyor...';
+
+          try {
+            await fetch(`/api/storefront/v2/users/${targetUserId}/wall`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content }),
+            });
+            wallInput.value = '';
+            fetchWallMessages();
+          } catch (err) {
+            console.error(err);
+            alert('Mesaj gönderilirken hata oluştu.');
+          } finally {
+            btnSend.disabled = false;
+            btnSend.innerText = 'Gönder';
+          }
+        });
+      }
+
+      // Dinamik Event Delegation (Yanıtla, Göster/Gizle)
+      wallContainer.addEventListener('click', async (e) => {
+        const target = e.target.closest('button');
+        if (!target) return;
+
+        const msgId = target.getAttribute('data-id');
+        
+        if (target.classList.contains('toggle-replies-btn')) {
+          const repliesDiv = document.getElementById(`replies-${msgId}`);
+          if (repliesDiv) {
+            if (repliesDiv.classList.contains('hidden')) {
+              repliesDiv.classList.remove('hidden');
+              target.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg> Yanıtları Gizle`;
+            } else {
+              repliesDiv.classList.add('hidden');
+              const replyCount = repliesDiv.children.length;
+              target.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg> Yanıtları Göster (${replyCount})`;
+            }
+          }
+        }
+
+        if (target.classList.contains('reply-btn')) {
+          // Önceki tüm reply formlarını kapat
+          document.querySelectorAll('[id^="reply-form-"]').forEach(f => f.classList.add('hidden'));
+          
+          const replyForm = document.getElementById(`reply-form-${msgId}`);
+          if (replyForm) {
+            replyForm.classList.remove('hidden');
+            const input = document.getElementById(`reply-input-${msgId}`);
+            if(input) input.focus();
+          }
+        }
+
+        if (target.classList.contains('cancel-reply-btn')) {
+          const replyForm = document.getElementById(`reply-form-${msgId}`);
+          if (replyForm) {
+            replyForm.classList.add('hidden');
+            document.getElementById(`reply-input-${msgId}`).value = '';
+          }
+        }
+
+        if (target.classList.contains('send-reply-btn')) {
+          const input = document.getElementById(`reply-input-${msgId}`);
+          const content = input.value.trim();
+          if (!content) return;
+
+          target.disabled = true;
+          target.innerText = '...';
+
+          try {
+            await fetch(`/api/storefront/v2/users/${targetUserId}/wall/${msgId}/reply`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content }),
+            });
+            input.value = '';
+            fetchWallMessages();
+          } catch (err) {
+            console.error(err);
+            alert('Yanıt gönderilemedi.');
+          } finally {
+            target.disabled = false;
+            target.innerText = 'Yanıtla';
+          }
+        }
+      });
+
+      // Sayfa yüklendiğinde önbellekteki veriyi kullanarak çiz veya çek
+      if (isOwnProfile && Array.isArray(window.SERVER_WALL_MESSAGES) && window.SERVER_WALL_MESSAGES.length >= 0) {
+        renderWallMessages();
+      } else {
+        wallContainer.innerHTML = '<div class="py-12 text-center text-gray-400 font-bold bg-gray-50 rounded-2xl border border-gray-100 border-dashed">Mesajlar yükleniyor...</div>';
+        fetchWallMessages();
+      }
+    });
+  </script>
+{% else %}
+  <div class="min-h-[50vh] flex items-center justify-center">
+    <div class="text-center">
+      <h2 class="text-2xl font-black text-gray-900 mb-2">Giriş Yapmalısınız</h2>
+      <p class="text-gray-500 font-medium mb-6">
+        Profilinizi görüntülemek için hesabınıza giriş yapmanız gerekmektedir.
+      </p>
+      <a
+        href="/auth"
+        class="px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-md"
+        >Giriş Yap</a
+      >
+    </div>
+  </div>
+{% endif %}

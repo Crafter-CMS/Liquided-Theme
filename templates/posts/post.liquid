@@ -1,0 +1,169 @@
+<div class="container max-w-[1000px] mx-auto px-4 mt-8 mb-24 space-y-8">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <a href="/posts" class="hover:text-primary transition-colors">Gönderiler</a>
+    <span>/</span>
+    <span class="text-gray-900 line-clamp-1">{{ post.title }}</span>
+  </div>
+
+  <div class="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
+    <!-- Post Header -->
+    <div class="h-[300px] md:h-[400px] relative">
+      <img
+        src="{% if post.featuredImage != blank %}{{ post.featuredImage }}{% else %}https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop{% endif %}"
+        class="w-full h-full object-cover"
+        alt="{{ post.title }}"
+      >
+      <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent"></div>
+
+      <div class="absolute bottom-0 left-0 p-8 md:p-12 w-full">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="bg-primary text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-sm">
+            {% if post.type == 'update' -%}
+              Güncelleme
+            {% elsif post.type == 'announcement' -%}
+              Duyuru
+            {% elsif post.type == 'news' -%}
+              Haber
+            {% elsif post.type == 'blog' -%}
+              Blog
+            {% else -%}
+              {{- post.type | default: 'Duyuru' -}}
+            {%- endif %}
+          </span>
+          <span class="text-gray-300 font-bold text-sm">
+            {{ post.createdAt | date: '%d.%m.%Y' }} &bull;
+            {{ post.author.username | default: post.authorName | default: 'Yönetim' }}
+          </span>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black text-white leading-tight drop-shadow-md">
+          {{ post.title }}
+        </h1>
+      </div>
+    </div>
+
+    <!-- Post Content -->
+    <div class="p-8 md:p-12">
+      <article class="prose prose-lg max-w-none prose-img:rounded-2xl prose-headings:font-black prose-a:text-primary hover:prose-a:text-blue-700">
+        {{ post.content | lexical_html }}
+      </article>
+
+      {% if post.tags and post.tags.size > 0 %}
+        <div class="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-2">
+          {% for tag in post.tags %}
+            <span class="bg-gray-50 border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg text-sm font-bold">
+              #{{ tag }}
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Post Stats & Actions -->
+      <div class="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-6 text-gray-500 font-bold text-sm">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            <span>{{ post.viewCount | default: 0 }} Görüntülenme</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <span id="likeCountText">{{ post.likeCount | default: 0 }} Beğeni</span>
+          </div>
+        </div>
+
+        <button 
+          id="likeBtn" 
+          data-post-id="{{ post.id }}"
+          data-liked="{% if customer and post.likedBy contains customer.id %}true{% else %}false{% endif %}"
+          class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all {% if customer and post.likedBy contains customer.id %}bg-red-50 text-red-500 border border-red-200{% else %}bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100{% endif %}"
+        >
+          <svg class="w-5 h-5 {% if customer and post.likedBy contains customer.id %}fill-current{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+          <span id="likeBtnText">{% if customer and post.likedBy contains customer.id %}Beğendin{% else %}Beğen{% endif %}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="flex justify-center mt-8">
+    <a
+      href="/posts"
+      class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Tüm Gönderilere Dön
+    </a>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const likeBtn = document.getElementById('likeBtn');
+    const likeCountText = document.getElementById('likeCountText');
+    const likeBtnText = document.getElementById('likeBtnText');
+    const likeIcon = likeBtn.querySelector('svg');
+
+    if (likeBtn) {
+      likeBtn.addEventListener('click', async () => {
+        {% if customer %}
+          const postId = likeBtn.getAttribute('data-post-id');
+          const isLiked = likeBtn.getAttribute('data-liked') === 'true';
+          
+          // Optimistic UI Update
+          const currentLikes = parseInt(likeCountText.innerText) || 0;
+          
+          if (isLiked) {
+            // Unliking
+            likeBtn.setAttribute('data-liked', 'false');
+            likeBtn.className = 'flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100';
+            likeIcon.classList.remove('fill-current');
+            likeBtnText.innerText = 'Beğen';
+            likeCountText.innerText = Math.max(0, currentLikes - 1) + ' Beğeni';
+          } else {
+            // Liking
+            likeBtn.setAttribute('data-liked', 'true');
+            likeBtn.className = 'flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-red-50 text-red-500 border border-red-200';
+            likeIcon.classList.add('fill-current');
+            likeBtnText.innerText = 'Beğendin';
+            likeCountText.innerText = (currentLikes + 1) + ' Beğeni';
+          }
+
+          try {
+            // Backend'e İsteği Gönder (Proxy üzerinden)
+            const response = await fetch(`/api/storefront/v2/posts/${postId}/like`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+
+            const result = await response.json();
+            
+            if (!result.success) {
+              // Revert if failed
+              showToast('İşlem başarısız oldu: ' + (result.message || 'Bilinmeyen hata'), 'error');
+              setTimeout(() => window.location.reload(), 1500);
+            }
+          } catch (err) {
+            console.error('Like error:', err);
+            showToast('Bağlantı hatası oluştu!', 'error');
+            setTimeout(() => window.location.reload(), 1500);
+          }
+        {% else %}
+          // Giriş yapmamışsa yönlendir
+          window.location.href = '/auth';
+        {% endif %}
+      });
+    }
+  });
+</script>

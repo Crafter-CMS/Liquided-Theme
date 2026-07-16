@@ -1,0 +1,272 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-8">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">Destek Merkezi</span>
+  </div>
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-black text-gray-900 tracking-tight">Destek Taleplerim</h1>
+      <p class="text-gray-500 mt-2">Yardıma ihtiyacın olan konularda uzman ekibimizle iletişime geç.</p>
+    </div>
+
+    {% if customer %}
+      <a
+        href="/support/new"
+        class="bg-primary text-white font-bold rounded-xl px-6 py-3 hover:brightness-110 transition-all shadow-md shadow-primary/30 flex items-center gap-2"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Yeni Talep Oluştur
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Main Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+    <!-- Sidebar -->
+    <aside class="space-y-6">
+      {% if customer %}
+        <!-- User Info -->
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
+          <div class="flex items-center gap-4 mb-4">
+            <img
+              src="https://mc-heads.net/avatar/{{ customer.username }}/48"
+              class="w-12 h-12 rounded-xl border-2 border-primary/20"
+              alt=""
+            >
+            <div>
+              <div class="font-black text-gray-900">{{ customer.username }}</div>
+              <div class="text-xs font-bold text-gray-500">Oyuncu</div>
+            </div>
+          </div>
+          <a
+            href="/profile"
+            class="w-full block text-center px-4 py-2 bg-gray-50 text-gray-700 hover:text-primary hover:bg-primary/5 rounded-xl text-sm font-bold transition-colors"
+          >
+            Profile Git
+          </a>
+        </div>
+      {% endif %}
+
+      <!-- Filters -->
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+          </svg>
+          Durum Filtresi
+        </h3>
+
+        <div class="space-y-1.5 flex flex-col" id="statusFilters">
+          <button
+            data-status="ALL"
+            class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors bg-primary text-white flex justify-between items-center"
+          >
+            Tümü
+            <span class="px-2 py-0.5 bg-white/20 rounded-md text-xs" id="count-ALL">0</span>
+          </button>
+          <button
+            data-status="OPEN"
+            class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 flex justify-between items-center"
+          >
+            Açık
+            <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-xs" id="count-OPEN">0</span>
+          </button>
+          <button
+            data-status="REPLIED"
+            class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 flex justify-between items-center"
+          >
+            Yanıtlandı
+            <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-xs" id="count-REPLIED">0</span>
+          </button>
+          <button
+            data-status="CLOSED"
+            class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 flex justify-between items-center"
+          >
+            Kapalı
+            <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-xs" id="count-CLOSED">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Info Box -->
+      <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+        <h4 class="font-bold text-blue-900 mb-2 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Önemli Bilgi
+        </h4>
+        <p class="text-sm text-blue-800 leading-relaxed">
+          Destek taleplerinize ortalama <span class="font-bold">12-24 saat</span> içerisinde dönüş yapılmaktadır. Lütfen
+          gereksiz veya art arda talep oluşturmaktan kaçının.
+        </p>
+      </div>
+    </aside>
+    <!-- Main Content -->
+    <main>
+      {% if customer %}
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden relative min-h-[400px]">
+          <!-- Empty State -->
+          <div
+            id="tickets-empty"
+            class="hidden absolute inset-0 z-10 bg-white flex-col items-center justify-center p-8 text-center"
+          >
+            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100">
+              <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-black text-gray-900 mb-2">Gösterilecek Talep Yok</h3>
+            <p class="text-gray-500 font-medium max-w-sm mb-6">
+              Bu filtreye uygun herhangi bir destek talebi bulunamadı.
+            </p>
+            <a
+              href="/support/new"
+              class="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors inline-block mt-6"
+            >
+              Yeni Talep Oluştur
+            </a>
+          </div>
+
+          <!-- Tickets List (Table-like grid for desktop, cards for mobile) -->
+          <div id="tickets-list" class="hidden flex-col divide-y divide-gray-100">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      {% else %}
+        <!-- Guest Notice -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center text-center">
+          <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 border border-gray-100">
+            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-black text-gray-900 mb-2">Giriş Yapmalısın</h3>
+          <p class="text-gray-500 font-medium max-w-md mb-8">
+            Destek taleplerini görüntülemek ve yeni bir talep oluşturmak için hesabına giriş yapman gerekiyor.
+          </p>
+          <a
+            href="/auth/sign-in"
+            class="bg-primary text-white font-bold rounded-xl px-8 py-3.5 hover:brightness-110 transition-all shadow-md shadow-primary/30"
+          >
+            Giriş Yap veya Kayıt Ol
+          </a>
+        </div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+
+<script>
+  let allTickets = [];
+  let currentFilter = 'ALL';
+
+  function formatDate(isoStr) {
+    const d = new Date(isoStr);
+    return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function getStatusBadge(status) {
+    if (status === 'OPEN') return '<span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-200">Açık</span>';
+    if (status === 'REPLIED') return '<span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-200">Yanıtlandı</span>';
+    if (status === 'CLOSED') return '<span class="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-bold border border-gray-200">Kapalı</span>';
+    return `<span class="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-bold border border-gray-200">${status}</span>`;
+  }
+
+  function updateCounts() {
+    const counts = { ALL: allTickets.length, OPEN: 0, REPLIED: 0, CLOSED: 0 };
+    allTickets.forEach(t => {
+      if (counts[t.status] !== undefined) counts[t.status]++;
+    });
+    
+    document.getElementById('count-ALL').innerText = counts.ALL;
+    document.getElementById('count-OPEN').innerText = counts.OPEN;
+    document.getElementById('count-REPLIED').innerText = counts.REPLIED;
+    document.getElementById('count-CLOSED').innerText = counts.CLOSED;
+  }
+
+  function renderTickets() {
+    const listEl = document.getElementById('tickets-list');
+    const emptyEl = document.getElementById('tickets-empty');
+    
+    let filtered = allTickets;
+    if (currentFilter !== 'ALL') {
+      filtered = allTickets.filter(t => t.status === currentFilter);
+    }
+    
+    if (filtered.length === 0) {
+      listEl.classList.add('hidden');
+      listEl.classList.remove('flex');
+      emptyEl.classList.remove('hidden');
+    } else {
+      emptyEl.classList.add('hidden');
+      listEl.classList.remove('hidden');
+      listEl.classList.add('flex');
+      
+      listEl.innerHTML = filtered.map(t => `
+        <a href="/support/${t.id}" class="group block p-5 hover:bg-gray-50/80 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-primary group-hover:border-primary/20 group-hover:bg-primary/5 transition-all shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <div>
+                <h4 class="text-[15px] font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1">${t.title}</h4>
+                <div class="flex items-center gap-2 mt-1.5 text-xs font-semibold text-gray-500">
+                  <span class="uppercase tracking-wider">#${t.id.substring(0,6)}</span>
+                  <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                  <span>${formatDate(t.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+              ${getStatusBadge(t.status)}
+              <svg class="w-5 h-5 text-gray-300 group-hover:text-primary transition-colors group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
+          </div>
+        </a>
+      `).join('');
+    }
+  }
+
+  function initTickets() {
+    allTickets = {{ tickets | json }} || [];
+    
+    // Sort newest first
+    allTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    updateCounts();
+    renderTickets();
+  }
+
+  // Filter Buttons Logic
+  document.querySelectorAll('#statusFilters .filter-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      // Reset all buttons
+      document.querySelectorAll('#statusFilters .filter-btn').forEach(b => {
+        b.className = 'filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 flex justify-between items-center';
+        b.querySelector('span').className = 'px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-xs';
+      });
+      
+      // Active state for clicked
+      const clicked = e.currentTarget;
+      clicked.className = 'filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors bg-primary text-white flex justify-between items-center';
+      clicked.querySelector('span').className = 'px-2 py-0.5 bg-white/20 rounded-md text-xs';
+      
+      currentFilter = clicked.dataset.status;
+      renderTickets();
+    });
+  });
+
+  initTickets();
+</script>

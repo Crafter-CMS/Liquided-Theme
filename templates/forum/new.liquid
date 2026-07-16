@@ -1,0 +1,354 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-8">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <a href="/forum" class="hover:text-primary transition-colors">Forum</a>
+    <span>/</span>
+    <span class="text-gray-900">Yeni Konu</span>
+  </div>
+
+  {% if customer %}
+    <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+      <!-- Sidebar -->
+      <aside class="space-y-6">
+        <!-- User Info -->
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
+          <div class="flex items-center gap-4 mb-4">
+            <img
+              src="https://mc-heads.net/avatar/{{ customer.username }}/48"
+              class="w-12 h-12 rounded-xl border-2 border-primary/20"
+              alt=""
+            >
+            <div>
+              <div class="font-black text-gray-900">{{ customer.username }}</div>
+              <div class="text-xs font-bold text-gray-500">Oyuncu</div>
+            </div>
+          </div>
+          <a
+            href="/profile"
+            class="w-full block text-center px-4 py-2 bg-gray-50 text-gray-700 hover:text-primary hover:bg-primary/5 rounded-xl text-sm font-bold transition-colors"
+          >
+            Profile Git
+          </a>
+        </div>
+
+        <!-- Info Box -->
+        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+          <h4 class="font-bold text-blue-900 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Önemli Bilgi
+          </h4>
+          <p class="text-sm text-blue-800 leading-relaxed">
+            Forumda konu açarken kurallara uymaya özen gösterin. Argo, küfür veya kışkırtıcı içerikler
+            uyarısız silinir.
+          </p>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="p-8 border-b border-gray-100 bg-gray-50/50">
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </div>
+              Yeni Konu Aç
+            </h1>
+            <p class="text-gray-500 mt-2 text-sm">Topluluğa yeni bir konu kazandır.</p>
+          </div>
+
+          <form id="createTopicForm" class="p-8 space-y-6">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">Başlık</label>
+              <input
+                type="text"
+                name="title"
+                required
+                placeholder="Konu başlığını girin..."
+                class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">Kategori</label>
+              <div class="relative">
+                <select
+                  name="categoryId"
+                  required
+                  class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none cursor-pointer"
+                >
+                  <option value="" disabled selected>Lütfen bir kategori seçin</option>
+                  {% for cat in forumCategories %}
+                    <option value="{{ cat.slug | default: cat.id }}" {% if request.searchParams.category == cat.slug or request.searchParams.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+                <svg
+                  class="w-4 h-4 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">İçerik</label>
+              <div class="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all flex flex-col">
+                <!-- Toolbar -->
+                <div class="flex items-center gap-1 p-2 bg-white border-b border-gray-200">
+                  <button
+                    type="button"
+                    id="bold-btn"
+                    class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                    title="Kalın"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    id="italic-btn"
+                    class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                    title="İtalik"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l-4 16M6 16l4-16"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    id="underline-btn"
+                    class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                    title="Altı Çizili"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 3v7a6 6 0 006 6 6 6 0 006-6V3m-6 18h6"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    id="strike-btn"
+                    class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                    title="Üstü Çizili"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M8 6h8a2 2 0 010 4H8a2 2 0 010-4zM8 14h8a2 2 0 000 4H8a2 2 0 000-4z"/>
+                    </svg>
+                  </button>
+                  <div class="w-px h-6 bg-gray-200 mx-1"></div>
+                  <button
+                    type="button"
+                    id="left-btn"
+                    class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                    title="Sola Hizala"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    id="center-btn"
+                    class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                    title="Ortala"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M4 18h16"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    id="right-btn"
+                    class="p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+                    title="Sağa Hizala"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M10 12h10M4 18h16"/>
+                    </svg>
+                  </button>
+                </div>
+                <!-- Editor Input -->
+                <div
+                  id="lexical-editor"
+                  class="min-h-[150px] p-5 outline-none text-sm text-gray-900 font-sans"
+                  contenteditable="true"
+                ></div>
+              </div>
+            </div>
+
+            <div class="pt-4 flex justify-end">
+              <button
+                type="submit"
+                class="bg-primary text-white font-bold rounded-xl px-8 py-3.5 hover:brightness-110 transition-all shadow-md shadow-primary/30 flex items-center justify-center gap-2"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+                Konuyu Gönder
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <style>
+      .editor-text-bold {
+        font-weight: bold;
+      }
+      .editor-text-italic {
+        font-style: italic;
+      }
+      .editor-text-underline {
+        text-decoration: underline;
+      }
+      .editor-text-strikethrough {
+        text-decoration: line-through;
+      }
+      .editor-text-underlineStrikethrough {
+        text-decoration: underline line-through;
+      }
+    </style>
+
+    <script type="module">
+      import { createEditor, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND } from 'https://esm.sh/lexical@0.14.5';
+      import { registerRichText } from 'https://esm.sh/@lexical/rich-text@0.14.5';
+
+      window.lexicalContentJSON = null;
+
+      const myTheme = {
+        text: {
+          bold: 'editor-text-bold',
+          italic: 'editor-text-italic',
+          underline: 'editor-text-underline',
+          strikethrough: 'editor-text-strikethrough',
+          underlineStrikethrough: 'editor-text-underlineStrikethrough',
+        },
+      };
+
+      const config = {
+        namespace: 'ForumNewTopic',
+        theme: myTheme,
+        onError: (error) => {
+          console.error('Lexical Hatası:', error);
+        },
+      };
+
+      const editor = createEditor(config);
+      const editorElement = document.getElementById('lexical-editor');
+
+      editor.setRootElement(editorElement);
+
+      // Kayıt
+      registerRichText(editor);
+
+      // Toolbars
+      document.getElementById('bold-btn').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+      });
+      document.getElementById('italic-btn').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+      });
+      document.getElementById('underline-btn').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+      });
+      document.getElementById('strike-btn').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
+      });
+
+      document.getElementById('left-btn').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
+      });
+      document.getElementById('center-btn').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
+      });
+      document.getElementById('right-btn').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
+      });
+
+      editor.registerUpdateListener(({ editorState }) => {
+        editorState.read(() => {
+          window.lexicalContentJSON = editorState.toJSON();
+        });
+      });
+
+      document.getElementById('createTopicForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!window.lexicalContentJSON || !window.lexicalContentJSON.root.children.length) {
+          window.showToast?.('Lütfen bir içerik girin.', 'error');
+          return;
+        }
+
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="animate-pulse">Gönderiliyor...</span>';
+
+        const formData = new FormData(e.target);
+        const categoryId = formData.get('categoryId');
+
+        const data = {
+          title: formData.get('title'),
+          content: window.lexicalContentJSON,
+        };
+
+        try {
+          const res = await fetch(`/api/storefront/v1/forum/category/${categoryId}/topic`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          const result = await res.json();
+
+          if (result.success || res.ok) {
+            window.showToast?.('Konu başarıyla oluşturuldu!', 'success');
+            // Backendden dönen topic datasında ID veya slug olması muhtemel:
+            const topicUrlId = result.id || result.slug || '';
+            if (topicUrlId) {
+              window.location.href = `/forum/${categoryId}/${topicUrlId}`;
+            } else {
+              window.location.href = `/forum/${categoryId}`;
+            }
+          } else {
+            window.showToast?.(result.message || 'Bir hata oluştu.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
+        } catch (err) {
+          window.showToast?.('Bağlantı hatası.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
+      });
+    </script>
+  {% else %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center text-center">
+      <h3 class="text-2xl font-black text-gray-900 mb-2">Giriş Yapmalısın</h3>
+      <p class="text-gray-500 font-medium mb-8">
+        Yeni bir konu oluşturmak için hesabına giriş yapman gerekiyor.
+      </p>
+      <a href="/auth/sign-in" class="bg-primary text-white font-bold rounded-xl px-8 py-3.5">Giriş Yap</a>
+    </div>
+  {% endif %}
+</div>

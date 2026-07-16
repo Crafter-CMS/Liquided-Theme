@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>403 - Yetkisiz Erişim | {{ website.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: {{ settings.colors.primary | default: '#0056b3' }};
+      --color-bg: {{ settings.colors.background | default: '#f8f9fa' }};
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--color-bg);
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--color-primary)',
+            base: 'var(--color-bg)',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Rajdhani', 'sans-serif'],
+          },
+        },
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 antialiased selection:bg-primary selection:text-white">
+
+  <div class="max-w-2xl w-full bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-sm text-center relative overflow-hidden">
+    
+    <div class="absolute top-0 left-0 w-32 h-32 bg-gray-50 rounded-br-[100px] -ml-8 -mt-8 opacity-50"></div>
+    <div class="absolute bottom-0 right-0 w-32 h-32 bg-gray-50 rounded-tl-[100px] -mr-8 -mb-8 opacity-50"></div>
+
+    <div class="relative z-10">
+      <div class="text-9xl font-black text-gray-100 tracking-tighter mb-4 select-none">403</div>
+      <h1 class="text-4xl font-black text-gray-900 tracking-tight mb-4 -mt-12 relative z-10">Yetkisiz Erişim</h1>
+      <p class="text-lg text-gray-500 font-medium mb-8 max-w-lg mx-auto">
+        Bu sayfayı görüntülemek için gerekli izinlere sahip değilsiniz.
+      </p>
+
+      <div class="flex items-center justify-center gap-4">
+        <a href="/" class="px-8 py-4 bg-gray-100 text-gray-900 font-black rounded-2xl hover:bg-gray-200 transition-all flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Ana Sayfaya Dön
+        </a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

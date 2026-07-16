@@ -1,0 +1,370 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-8">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <a href="/forum" class="hover:text-primary transition-colors">Forum</a>
+    {% if forumTopic.categoryId %}
+      <span>/</span>
+      <a href="/forum/{{ forumTopic.categoryId }}" class="hover:text-primary transition-colors">Kategori</a>
+    {% endif %}
+    <span>/</span>
+    <span class="text-gray-900 truncate max-w-[200px] inline-block align-bottom">{{ forumTopic.title }}</span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
+    <!-- Main Content: Messages -->
+    <main class="space-y-6">
+      
+      <!-- Topic Header -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          {% if forumTopic.isPinned %}
+            <span class="px-3 py-1 bg-yellow-50 text-yellow-700 text-xs font-bold rounded-lg uppercase tracking-wider border border-yellow-200 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+              Sabit
+            </span>
+          {% endif %}
+          {% if forumTopic.isLocked %}
+            <span class="px-3 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-lg uppercase tracking-wider border border-red-200 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              Kilitli
+            </span>
+          {% endif %}
+          <div class="flex items-center gap-2 text-sm text-gray-500 font-medium">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            {{ forumTopic.createdAt | date: "%d.%m.%Y %H:%M" }}
+          </div>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">{{ forumTopic.title }}</h1>
+      </div>
+
+      <!-- OP (Original Poster) Message -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
+        <!-- Author Profile Column -->
+        <div class="w-full md:w-64 bg-gray-50/50 border-b md:border-b-0 md:border-r border-gray-100 p-6 flex flex-col items-center text-center flex-shrink-0">
+          <div class="relative w-24 h-24 mb-4">
+            <div class="absolute inset-0 bg-primary/20 rounded-2xl rotate-6"></div>
+            <img src="https://mc-heads.net/avatar/{{ forumTopic.authorName }}/100" class="relative w-full h-full object-cover rounded-2xl border-4 border-white shadow-sm" alt="{{ forumTopic.authorName }}">
+          </div>
+          <div class="font-black text-gray-900 text-lg mb-1">{{ forumTopic.authorName }}</div>
+          <div class="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg uppercase tracking-wider mb-4">
+            Konu Sahibi
+          </div>
+        </div>
+        
+        <!-- Post Content Column -->
+        <div class="flex-1 flex flex-col min-w-0 p-6 md:p-8">
+          <div class="prose prose-sm md:prose-base max-w-none text-gray-800 break-words lexical-content flex-1">
+            {{ forumTopic.content | lexical_html }}
+          </div>
+          
+          <div class="mt-8 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4">
+            <div class="text-sm font-semibold text-gray-400">
+              #1
+            </div>
+            <button class="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-red-500 transition-colors bg-gray-50 hover:bg-red-50 px-4 py-2 rounded-xl group">
+              <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <span>Beğen ({{ forumTopic.likeCount | default: 0 }})</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Replies -->
+      {% if forumTopic.messages and forumTopic.messages.size > 0 %}
+        <div class="space-y-6 mt-8">
+          {% for message in forumTopic.messages %}
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
+              <!-- Author Profile Column -->
+              <div class="w-full md:w-64 bg-gray-50/50 border-b md:border-b-0 md:border-r border-gray-100 p-6 flex flex-col items-center text-center flex-shrink-0">
+                <img src="https://mc-heads.net/avatar/{{ message.authorName }}/80" class="w-20 h-20 object-cover rounded-2xl border-4 border-white shadow-sm mb-3" alt="{{ message.authorName }}">
+                <div class="font-bold text-gray-900 text-base mb-1">{{ message.authorName }}</div>
+                <div class="text-xs font-semibold text-gray-400 mb-2">Üye</div>
+                <div class="text-xs font-semibold text-gray-400 w-full pt-3 border-t border-gray-100">
+                  {{ message.createdAt | date: "%d.%m.%Y %H:%M" }}
+                </div>
+              </div>
+              
+              <!-- Post Content Column -->
+              <div class="flex-1 flex flex-col min-w-0 p-6 md:p-8">
+                <div class="prose prose-sm max-w-none text-gray-800 break-words lexical-content flex-1">
+                  {{ message.content | lexical_html }}
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4">
+                  <div class="text-sm font-semibold text-gray-400">
+                    #{{ forloop.index | plus: 1 }}
+                  </div>
+                  <button class="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    {{ message.likeCount | default: 0 }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Reply Form -->
+      {% if forumTopic.isLocked %}
+        <div class="bg-gray-50 rounded-3xl border border-gray-200 p-8 text-center mt-8 shadow-inner">
+          <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-black text-gray-900 mb-2">Bu Konu Kilitlenmiş</h3>
+          <p class="text-gray-500 font-medium">Bu konuya yeni yanıt gönderilemez. İlgili tartışma sonlandırılmıştır.</p>
+        </div>
+      {% elsif customer %}
+        <div class="bg-white rounded-3xl shadow-sm border border-primary/20 p-6 md:p-8 mt-8">
+          <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+              </svg>
+            </div>
+            Cevap Yaz
+          </h3>
+          <form id="replyForm" class="space-y-6">
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-all flex flex-col shadow-inner">
+              <!-- Toolbar -->
+              <div class="flex flex-wrap items-center gap-1 p-3 bg-white border-b border-gray-200">
+                <button type="button" id="bold-btn" class="p-2.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-colors" title="Kalın">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
+                </button>
+                <button type="button" id="italic-btn" class="p-2.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-colors" title="İtalik">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l-4 16M6 16l4-16"/></svg>
+                </button>
+                <button type="button" id="underline-btn" class="p-2.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-colors" title="Altı Çizili">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 3v7a6 6 0 006 6 6 6 0 006-6V3m-6 18h6"/></svg>
+                </button>
+                <button type="button" id="strike-btn" class="p-2.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-colors" title="Üstü Çizili">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M8 6h8a2 2 0 010 4H8a2 2 0 010-4zM8 14h8a2 2 0 000 4H8a2 2 0 000-4z"/></svg>
+                </button>
+                <div class="w-px h-6 bg-gray-200 mx-2"></div>
+                <button type="button" id="left-btn" class="p-2.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-colors" title="Sola Hizala">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16"/></svg>
+                </button>
+                <button type="button" id="center-btn" class="p-2.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-colors" title="Ortala">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M4 18h16"/></svg>
+                </button>
+                <button type="button" id="right-btn" class="p-2.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-colors" title="Sağa Hizala">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M10 12h10M4 18h16"/></svg>
+                </button>
+              </div>
+              <div
+                id="lexical-editor"
+                class="min-h-[180px] p-6 outline-none text-base text-gray-900 font-sans cursor-text"
+                contenteditable="true"
+              ></div>
+            </div>
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                class="bg-primary text-white font-bold rounded-xl px-10 py-4 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2 text-lg"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+                Gönder
+              </button>
+            </div>
+          </form>
+        </div>
+      {% else %}
+        <div class="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-sm border border-gray-100 p-10 mt-8 text-center flex flex-col items-center">
+          <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm border border-gray-100">
+            <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-black text-gray-900 mb-3">Sohbete Katıl!</h3>
+          <p class="text-gray-500 font-medium mb-8 max-w-md">Kendi fikirlerini belirtmek ve diğer oyuncularla etkileşime geçmek için hemen giriş yap.</p>
+          <a href="/auth/sign-in" class="bg-primary text-white font-bold rounded-xl px-10 py-4 hover:brightness-110 transition-all shadow-md shadow-primary/20 text-lg">
+            Hemen Giriş Yap
+          </a>
+        </div>
+      {% endif %}
+    </main>
+
+    <!-- Sidebar: Info -->
+    <aside class="space-y-6">
+      <div class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sticky top-6">
+        <h3 class="font-black text-gray-900 mb-6 pb-4 border-b border-gray-100 text-lg flex items-center gap-2">
+          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          Konu İstatistikleri
+        </h3>
+        
+        <div class="space-y-5">
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <div class="text-sm font-bold text-gray-500 flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              Okunma
+            </div>
+            <div class="font-black text-gray-900 text-lg">{{ forumTopic.viewCount | default: 0 }}</div>
+          </div>
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <div class="text-sm font-bold text-gray-500 flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              Yanıt
+            </div>
+            <div class="font-black text-gray-900 text-lg">{{ forumTopic.replyCount | default: 0 }}</div>
+          </div>
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <div class="text-sm font-bold text-gray-500 flex items-center gap-2">
+              <svg class="w-4 h-4 text-red-400" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              Beğeni
+            </div>
+            <div class="font-black text-gray-900 text-lg">{{ forumTopic.likeCount | default: 0 }}</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<style>
+  .editor-text-bold {
+    font-weight: bold;
+  }
+  .editor-text-italic {
+    font-style: italic;
+  }
+  .editor-text-underline {
+    text-decoration: underline;
+  }
+  .editor-text-strikethrough {
+    text-decoration: line-through;
+  }
+  .editor-text-underlineStrikethrough {
+    text-decoration: underline line-through;
+  }
+  
+  /* Prose stilleri - zengin içerik okunaklılığını artırır */
+  .lexical-content p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+  .lexical-content p:last-child {
+    margin-bottom: 0;
+  }
+</style>
+
+<script type="module">
+  import { createEditor, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND } from 'https://esm.sh/lexical@0.14.5';
+  import { registerRichText } from 'https://esm.sh/@lexical/rich-text@0.14.5';
+
+  window.lexicalContentJSON = null;
+
+  const myTheme = {
+    text: {
+      bold: 'editor-text-bold',
+      italic: 'editor-text-italic',
+      underline: 'editor-text-underline',
+      strikethrough: 'editor-text-strikethrough',
+      underlineStrikethrough: 'editor-text-underlineStrikethrough',
+    },
+  };
+
+  const config = {
+    namespace: 'ForumReply',
+    theme: myTheme,
+    onError: (error) => {
+      console.error('Lexical Hatası:', error);
+    },
+  };
+
+  const editor = createEditor(config);
+  const editorElement = document.getElementById('lexical-editor');
+
+  if (editorElement) {
+    editor.setRootElement(editorElement);
+
+    // Kayıt
+    registerRichText(editor);
+
+    // Toolbars
+    document.getElementById('bold-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+    });
+    document.getElementById('italic-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+    });
+    document.getElementById('underline-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+    });
+    document.getElementById('strike-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
+    });
+
+    document.getElementById('left-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
+    });
+    document.getElementById('center-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
+    });
+    document.getElementById('right-btn')?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
+    });
+
+    editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        window.lexicalContentJSON = editorState.toJSON();
+      });
+    });
+
+    document.getElementById('replyForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!window.lexicalContentJSON || !window.lexicalContentJSON.root.children.length) {
+        window.showToast?.('Lütfen bir mesaj girin.', 'error');
+        return;
+      }
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Gönderiliyor...</span>';
+
+      const topicId = '{{ forumTopic.id }}';
+
+      try {
+        const res = await fetch(`/api/storefront/v1/forum/topic/${topicId}/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: window.lexicalContentJSON }),
+        });
+        const result = await res.json();
+
+        if (result.success || res.ok) {
+          window.showToast?.('Cevabınız gönderildi!', 'success');
+          window.location.reload();
+        } else {
+          window.showToast?.(result.message || 'Bir hata oluştu.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
+      } catch (err) {
+        window.showToast?.('Bağlantı hatası.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    });
+  }
+</script>

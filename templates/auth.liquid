@@ -1,0 +1,310 @@
+{% if websiteData.security.cf_turnstile.site_key %}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endif %}
+<div class="flex w-full h-screen bg-white overflow-hidden">
+  <!-- LEFT SIDE: Auth Form -->
+  <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 lg:p-24 relative">
+    <!-- Back to Home -->
+    <a
+      href="/"
+      class="absolute top-8 left-8 flex items-center gap-2 text-gray-500 hover:text-primary transition-colors font-bold text-sm"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Ana Sayfaya Dön
+    </a>
+
+    <div class="w-full max-w-md mx-auto">
+      <!-- Logo -->
+      <a href="/" class="block mb-8">
+        {% if settings.logo %}
+          <img src="{{ settings.logo }}" alt="{{ shop.name }}" class="h-16 object-contain">
+        {% else %}
+          <div class="font-display font-black text-3xl text-gray-900">{{ shop.name | upcase }}</div>
+        {% endif %}
+      </a>
+
+      <!-- State Containers -->
+      <div
+        id="login-container"
+        class="{% if request.path contains 'sign-up' %}hidden{% endif %} animate-[fade-in_300ms_ease-out]"
+      >
+        <h1 class="text-3xl font-black text-gray-900 mb-2 tracking-tight">
+          {{ settings.auth.login_title | default: 'Tekrar Hoş Geldin!' }}
+        </h1>
+        <p class="text-gray-500 font-medium mb-8">
+          {{ settings.auth.login_description | default: 'Hesabına giriş yap ve maceraya kaldığın yerden devam et.' }}
+        </p>
+
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı Adı veya E-posta</label>
+            <input
+              type="text"
+              name="username"
+              required
+              placeholder="Steve"
+              class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-sm font-bold text-gray-700">Şifre</label>
+              <a href="#" class="text-xs font-bold text-primary hover:underline">Şifremi Unuttum?</a>
+            </div>
+            <input
+              type="password"
+              name="password"
+              required
+              placeholder="••••••••"
+              class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+
+          {% if websiteData.security.cf_turnstile.site_key %}
+            <div class="cf-turnstile mt-2" data-sitekey="{{ websiteData.security.cf_turnstile.site_key }}"></div>
+          {% endif %}
+
+          <button
+            type="submit"
+            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+          >
+            <span>Giriş Yap</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 font-medium mt-8">
+          Henüz hesabın yok mu?
+          <button onclick="toggleAuth('register')" class="text-primary hover:underline font-bold ml-1">
+            Hemen Kayıt Ol
+          </button>
+        </p>
+      </div>
+
+      <div
+        id="register-container"
+        class="{% unless request.path contains 'sign-up' %}hidden{% endunless %} animate-[fade-in_300ms_ease-out]"
+      >
+        <h1 class="text-3xl font-black text-gray-900 mb-2 tracking-tight">
+          {{ settings.auth.register_title | default: 'Maceraya Katıl!' }}
+        </h1>
+        <p class="text-gray-500 font-medium mb-8">
+          {{
+            settings.auth.register_description
+            | default: 'Hemen ücretsiz bir hesap oluştur ve binlerce oyuncu arasına katıl.'
+          }}
+        </p>
+
+        <form id="registerForm" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı Adı (Oyundaki Adın)</label>
+            <input
+              type="text"
+              name="username"
+              required
+              placeholder="Steve"
+              class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">E-posta Adresi</label>
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="steve@minecraft.net"
+              class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Şifre</label>
+            <input
+              type="password"
+              name="password"
+              required
+              placeholder="••••••••"
+              class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+
+          {% if websiteData.security.cf_turnstile.site_key %}
+            <div class="cf-turnstile mt-2" data-sitekey="{{ websiteData.security.cf_turnstile.site_key }}"></div>
+          {% endif %}
+
+          <button
+            type="submit"
+            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+          >
+            <span>Hesap Oluştur</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+            </svg>
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 font-medium mt-8">
+          Zaten bir hesabın var mı?
+          <button onclick="toggleAuth('login')" class="text-primary hover:underline font-bold ml-1">Giriş Yap</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE: Image/Promo -->
+  <div class="hidden lg:flex lg:w-1/2 relative bg-gray-900 overflow-hidden rounded-l-[3rem] shadow-2xl m-4">
+    <img
+      src="{% if settings.auth.background %}{{ settings.auth.background }}{% elsif settings.header.banner %}{{ settings.header.banner }}{% else %}https://images.unsplash.com/photo-1627856013091-fed6e4e30025?q=80&w=2070&auto=format&fit=crop{% endif %}"
+      alt="Background"
+      class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
+    >
+    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+    <div class="relative z-10 flex flex-col justify-end p-16 h-full text-white">
+      <h2 class="text-4xl font-black mb-4 tracking-tight whitespace-pre-line">
+        {{ settings.auth.right_title | default: "Türkiye'nin En Büyük\nMinecraft Topluluğu" }}
+      </h2>
+      <p class="text-gray-300 font-medium text-lg max-w-lg mb-8 leading-relaxed whitespace-pre-line">
+        {{
+          settings.auth.right_description
+          | default: 'Hemen aramıza katıl, arkadaşlarınla birlikte devasa haritalarda hayatta kal, mini oyunlarda yeteneklerini göster ve efsanevi ödüller kazan!'
+        }}
+      </p>
+
+      <div class="flex items-center gap-3">
+        <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.6)]"></div>
+        <div>
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">Çevrimiçi</div>
+          <div class="font-black text-xl">
+            <span id="auth-online-count" class="animate-pulse text-white">...</span>
+            <span class="text-sm font-bold text-gray-300">Oyuncu</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dynamic Online Players
+  const serverIp = '{{ settings.server_ip | default: "play.crafter.com.tr" }}';
+  fetch(`https://mcapi.tr/api/v1/status/${serverIp}`)
+    .then((r) => r.json())
+    .then((data) => {
+      const el = document.getElementById('auth-online-count');
+      if (el) {
+        el.classList.remove('animate-pulse');
+        el.innerText = data.players ? data.players.online : 0;
+      }
+    })
+    .catch(() => {
+      const el = document.getElementById('auth-online-count');
+      if (el) {
+        el.classList.remove('animate-pulse');
+        el.innerText = '?';
+      }
+    });
+
+  function toggleAuth(type) {
+    const login = document.getElementById('login-container');
+    const register = document.getElementById('register-container');
+
+    // Update URL path without reload
+    const newPath = type === 'register' ? '/auth/sign-up' : '/auth/sign-in';
+    window.history.pushState({}, '', newPath);
+
+    if (type === 'register') {
+      login.classList.add('hidden');
+      register.classList.remove('hidden');
+    } else {
+      register.classList.add('hidden');
+      login.classList.remove('hidden');
+    }
+  }
+
+  // Handle Login
+  document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    if (data['cf-turnstile-response']) {
+      data.turnstileToken = data['cf-turnstile-response'];
+      delete data['cf-turnstile-response'];
+    }
+
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-pulse">Giriş yapılıyor...</span>';
+
+    try {
+      const res = await fetch('/api/storefront/v2/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        window.location.href = '/';
+      } else {
+        showToast(result.message || 'Giriş başarısız!', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası!', 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
+
+  // Handle Register
+  document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    if (data['cf-turnstile-response']) {
+      data.turnstileToken = data['cf-turnstile-response'];
+      delete data['cf-turnstile-response'];
+    }
+
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-pulse">Hesap oluşturuluyor...</span>';
+
+    try {
+      const res = await fetch('/api/storefront/v2/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        showToast('Kayıt başarılı! Şimdi giriş yapabilirsiniz.', 'success');
+        toggleAuth('login');
+        // Pre-fill username
+        document.querySelector('#loginForm input[name="username"]').value = data.username;
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      } else {
+        showToast(result.message || 'Kayıt başarısız!', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası!', 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
+</script>

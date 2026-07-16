@@ -1,0 +1,417 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-8">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">Haberler & Duyurular</span>
+  </div>
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-black text-gray-900 tracking-tight">Haberler ve Duyurular</h1>
+    <p class="text-gray-500 mt-2">En son haberler, güncellemeler ve topluluk duyurularını takip edin.</p>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+    <!-- Sidebar -->
+    <aside class="space-y-6">
+      <!-- Filtreler Kartı -->
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+          </svg>
+          Filtreler
+        </h3>
+
+        <!-- Arama -->
+        <div class="mb-5">
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Ara</label>
+          <div class="relative">
+            <svg
+              class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              type="text"
+              id="searchInput"
+              value="{{ request.searchParams.search | escape }}"
+              placeholder="Haber ara..."
+              class="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl pl-9 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+        </div>
+
+        <hr class="border-gray-100 mb-5">
+
+        <!-- Kategori / Tip -->
+        <div class="mb-5">
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2 block"
+            >Gönderi Tipi</label
+          >
+          <div class="space-y-1.5 flex flex-col" id="typeFilters">
+            <button
+              data-type="all"
+              class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors bg-primary text-white"
+            >
+              Tümü
+            </button>
+            <button
+              data-type="news"
+              class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 text-gray-600 hover:bg-gray-50"
+            >
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15M9 11l3 3L22 4"/>
+              </svg>
+              Haberler
+            </button>
+            <button
+              data-type="announcement"
+              class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 text-gray-600 hover:bg-gray-50"
+            >
+              <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+              </svg>
+              Duyurular
+            </button>
+            <button
+              data-type="blog"
+              class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 text-gray-600 hover:bg-gray-50"
+            >
+              <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Blog
+            </button>
+            <button
+              data-type="update"
+              class="filter-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 text-gray-600 hover:bg-gray-50"
+            >
+              <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              Güncellemeler
+            </button>
+          </div>
+        </div>
+
+        <hr class="border-gray-100 mb-5">
+
+        <!-- Sıralama -->
+        <div class="mb-5">
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Sıralama</label>
+          <div class="space-y-1.5 flex flex-col" id="sortFilters">
+            <button
+              data-sort="createdAt"
+              class="sort-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 bg-gray-100 text-gray-900"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              En Yeni
+            </button>
+            <button
+              data-sort="viewCount"
+              class="sort-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 text-gray-600 hover:bg-gray-50"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              En Çok Görüntülenen
+            </button>
+            <button
+              data-sort="likeCount"
+              class="sort-btn w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 text-gray-600 hover:bg-gray-50"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+              En Çok Beğenilen
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
+        <h3 class="font-bold text-gray-900 mb-4 text-sm">İstatistikler</h3>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Toplam Gönderi:</span>
+            <span class="font-bold text-gray-900">{{ posts.size }}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Posts Grid -->
+    <div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="postsGrid">
+        {% if posts.size > 0 %}
+          {% for post in posts %}
+            <a
+              href="/posts/{{ post.slug }}"
+              class="post-card group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-primary/50 hover:shadow-lg transition-all duration-300 flex flex-col h-full relative"
+              data-title="{{ post.title | downcase }}"
+              data-type="{{ post.type }}"
+              data-created="{{ post.createdAt }}"
+              data-views="{{ post.viewCount | default: 0 }}"
+              data-likes="{{ post.likeCount | default: 0 }}"
+            >
+              <!-- Hot Badge / Pinned -->
+              <div class="absolute top-3 right-3 z-10 flex gap-2">
+                {% if post.isPinned %}
+                  <div class="bg-white text-primary p-1.5 rounded-lg shadow-sm border border-gray-100">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.828 3h3.982a2 2 0 011.992 2.181l-.637 7A2 2 0 0113.174 14H11.5v3.5a.5.5 0 01-1 0V14H8.826a2 2 0 01-1.991-1.819l-.637-7a2 2 0 011.992-2.181h1.638z"/>
+                    </svg>
+                  </div>
+                {% endif %}
+                {% if post.isHot %}
+                  <div class="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    HOT
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Image -->
+              <div class="h-48 overflow-hidden relative bg-gray-50">
+                <img
+                  src="{% if post.featuredImage != blank %}{{ post.featuredImage }}{% else %}https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop{% endif %}"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  alt="{{ post.title }}"
+                >
+              </div>
+
+              <!-- Content -->
+              <div class="p-5 flex flex-col flex-grow">
+                <!-- Type Badge -->
+                <div class="mb-3">
+                  {% if post.type == 'update' %}
+                    <span class="inline-flex items-center gap-1 bg-orange-50 text-orange-600 text-xs font-bold px-2 py-1 rounded-md">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                      </svg>
+                      Güncelleme
+                    </span>
+                  {% elsif post.type == 'announcement' %}
+                    <span class="inline-flex items-center gap-1 bg-purple-50 text-purple-600 text-xs font-bold px-2 py-1 rounded-md">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                      </svg>
+                      Duyuru
+                    </span>
+                  {% elsif post.type == 'blog' %}
+                    <span class="inline-flex items-center gap-1 bg-green-50 text-green-600 text-xs font-bold px-2 py-1 rounded-md">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      Blog
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-xs font-bold px-2 py-1 rounded-md">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15M9 11l3 3L22 4"/>
+                      </svg>
+                      Haber
+                    </span>
+                  {% endif %}
+                </div>
+
+                <h4 class="text-lg font-bold text-gray-900 leading-tight mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                  {{ post.title }}
+                </h4>
+                <p class="text-sm text-gray-600 line-clamp-2 mt-auto">
+                  {% if post.metaDescription != blank %}
+                    {{ post.metaDescription }}
+                  {% else %}
+                    {{
+                      post.content
+                      | lexical_text
+                      | truncate: 120
+                      | default: 'İçeriğin devamını okumak için tıklayın...'
+                    }}
+                  {% endif %}
+                </p>
+                <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-gray-400 mt-auto">
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    <span>{{ post.viewCount | default: 0 }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-primary">
+                    <span>Devamını Oku</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    <span>{{ post.likeCount | default: 0 }}</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        {% else %}
+          <div class="col-span-full py-16 text-center bg-white border border-gray-100 rounded-2xl shadow-sm">
+            <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15M9 11l3 3L22 4"/>
+            </svg>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Gönderi Bulunamadı</h3>
+            <p class="text-sm text-gray-500">Bu kriterlere uygun bir içerik yok.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <div
+        id="noResults"
+        class="hidden col-span-full py-16 text-center bg-white border border-gray-100 rounded-2xl shadow-sm"
+      >
+        <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15M9 11l3 3L22 4"/>
+        </svg>
+        <h3 class="text-lg font-bold text-gray-900 mb-1">Arama Sonucu Yok</h3>
+        <p class="text-sm text-gray-500">Aradığınız kelimeye veya filtreye uygun içerik bulunamadı.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const typeButtons = document.querySelectorAll('.filter-btn');
+    const sortButtons = document.querySelectorAll('.sort-btn');
+    const postsGrid = document.getElementById('postsGrid');
+
+    let currentType = new URLSearchParams(window.location.search).get('type') || 'all';
+    let currentSort = new URLSearchParams(window.location.search).get('sortBy') || 'createdAt';
+    let currentSearch = new URLSearchParams(window.location.search).get('search') || '';
+
+    let debounceTimer;
+    let currentFetchController = null;
+
+    // Arama dinleyicisi
+    searchInput.addEventListener('input', (e) => {
+      currentSearch = e.target.value;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fetchPosts();
+      }, 500);
+    });
+
+    // Tip filtresi dinleyicisi
+    typeButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        // UI Güncelleme
+        typeButtons.forEach((b) => {
+          b.classList.remove('bg-primary', 'text-white');
+          b.classList.add('text-gray-600', 'hover:bg-gray-50');
+        });
+        e.currentTarget.classList.remove('text-gray-600', 'hover:bg-gray-50');
+        e.currentTarget.classList.add('bg-primary', 'text-white');
+
+        currentType = e.currentTarget.dataset.type;
+        fetchPosts();
+      });
+    });
+
+    // Sıralama dinleyicisi
+    sortButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        // UI Güncelleme
+        sortButtons.forEach((b) => {
+          b.classList.remove('bg-gray-100', 'text-gray-900');
+          b.classList.add('text-gray-600', 'hover:bg-gray-50');
+        });
+        e.currentTarget.classList.remove('text-gray-600', 'hover:bg-gray-50');
+        e.currentTarget.classList.add('bg-gray-100', 'text-gray-900');
+
+        currentSort = e.currentTarget.dataset.sort;
+        fetchPosts();
+      });
+    });
+
+    async function fetchPosts() {
+      // Yükleniyor durumu - Opaklığı düşür
+      postsGrid.style.opacity = '0.5';
+      postsGrid.style.pointerEvents = 'none';
+
+      // URL Oluştur
+      const params = new URLSearchParams();
+      if (currentType && currentType !== 'all') params.set('type', currentType);
+      if (currentSort && currentSort !== 'createdAt') params.set('sortBy', currentSort);
+      if (currentSearch) params.set('search', currentSearch);
+
+      const queryString = params.toString();
+      const newUrl = window.location.pathname + (queryString ? '?' + queryString : '');
+
+      // Önceki isteği iptal et
+      if (currentFetchController) {
+        currentFetchController.abort();
+      }
+      currentFetchController = new AbortController();
+
+      try {
+        // URL'i tarayıcı geçmişine kaydet
+        window.history.pushState({}, '', newUrl);
+
+        // Sunucudan (Liquid) render edilmiş HTML'i çek
+        const response = await fetch(newUrl, {
+          signal: currentFetchController.signal,
+        });
+        const html = await response.text();
+
+        // Gelen HTML'i ayrıştır
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Sadece Grid'i al ve değiştir
+        const newGrid = doc.getElementById('postsGrid');
+        const newNoResults = doc.getElementById('noResults');
+
+        if (newGrid) {
+          postsGrid.innerHTML = newGrid.innerHTML;
+        }
+
+        // Yok durumu kontrolü
+        const currentNoResults = document.getElementById('noResults');
+        if (newNoResults && currentNoResults) {
+          currentNoResults.className = newNoResults.className;
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          return; // İptal edilen istekleri yoksay
+        }
+        console.error('Gönderiler yüklenirken hata oluştu:', error);
+      } finally {
+        // Yükleniyor durumunu kaldır (eğer yeni bir istek başlamadıysa)
+        if (!currentFetchController || currentFetchController.signal.aborted === false) {
+          postsGrid.style.opacity = '1';
+          postsGrid.style.pointerEvents = 'auto';
+        }
+      }
+    }
+
+    // Geri / İleri tuşlarında sayfayı güncelle
+    window.addEventListener('popstate', () => {
+      window.location.reload();
+    });
+  });
+</script>

@@ -1,0 +1,599 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 min-h-[50vh]">
+  <!-- Breadcrumb -->
+  <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100 mb-8">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">Hediye Gönder</span>
+  </div>
+
+  {% if customer %}
+    <!-- Başlık ve Bakiye -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3">Hediye Gönder</h1>
+        <p class="text-gray-500 font-medium max-w-lg leading-relaxed">
+          Arkadaşlarına kredi veya eşya hediye et. Seçtiğin kullanıcıya anında transfer edilir.
+        </p>
+      </div>
+      <div class="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
+        <span class="text-sm font-bold text-gray-500">Mevcut Bakiye:</span>
+        <span class="text-2xl font-black text-primary">
+          {{ customer.balance | default: 0 | round: 2 }}
+          {{ store.currency | default: 'TRY' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Bildirim Konteyneri -->
+    <div
+      id="notification-container"
+      class="hidden mb-6 p-5 rounded-2xl font-bold flex items-center gap-3 shadow-sm border"
+    >
+      <svg class="w-6 h-6 flex-shrink-0" id="notification-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d=""/>
+      </svg>
+      <span id="notification-message"></span>
+    </div>
+
+    <form id="gift-form" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Sol Kolon: Tür ve Miktar Seçimi -->
+        <div class="space-y-6">
+          <!-- Hediye Türü -->
+          <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">Hediye Türü Seçin</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                type="button"
+                id="btn-type-balance"
+                class="gift-type-btn relative p-6 rounded-2xl border-2 transition-all duration-300 text-left group overflow-hidden border-primary ring-4 ring-primary/10 bg-primary/5"
+                data-type="balance"
+              >
+                <div
+                  class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                ></div>
+                <div class="relative z-10 flex items-center gap-4">
+                  <div class="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                    💰
+                  </div>
+                  <div>
+                    <div class="font-black text-lg text-gray-900">Kredi Gönder</div>
+                    <div class="text-sm text-gray-500 font-medium mt-0.5">Bakiyenden istediğin miktarı gönder</div>
+                  </div>
+                </div>
+                <div class="type-check absolute top-4 right-4 text-primary">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                id="btn-type-item"
+                class="gift-type-btn relative p-6 rounded-2xl border-2 transition-all duration-300 text-left group overflow-hidden border-gray-200 hover:border-primary/40 bg-gray-50/50"
+                data-type="item"
+              >
+                <div
+                  class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                ></div>
+                <div class="relative z-10 flex items-center gap-4">
+                  <div class="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                    🎁
+                  </div>
+                  <div>
+                    <div class="font-black text-lg text-gray-900">Eşya Gönder</div>
+                    <div class="text-sm text-gray-500 font-medium mt-0.5">Sandığındaki eşyalardan birini gönder</div>
+                  </div>
+                </div>
+                <div class="type-check absolute top-4 right-4 text-primary hidden">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Hediye Detayı (Kredi) -->
+          <div
+            id="panel-balance"
+            class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm transition-opacity duration-300"
+          >
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">Gönderilecek Miktar</h3>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 font-bold">
+                {{ store.currency | default: 'TRY' }}
+              </div>
+              <input
+                type="number"
+                id="amount-input"
+                min="1"
+                step="1"
+                placeholder="0.00"
+                class="w-full pl-16 pr-6 py-4 text-xl font-black bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-900"
+              >
+            </div>
+
+            <!-- Yetersiz Bakiye Uyarısı -->
+            <div
+              id="insufficient-balance-warning"
+              class="hidden mt-4 p-4 rounded-xl bg-red-50 border border-red-100 flex items-center justify-between gap-4"
+            >
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                </div>
+                <div class="text-sm font-bold text-red-700 leading-tight">
+                  Yetersiz bakiye. Bu miktarı göndermek için bakiyeniz yetmiyor.
+                </div>
+              </div>
+              <a
+                href="/wallet"
+                class="text-xs font-black text-red-600 bg-red-100 hover:bg-red-200 py-3 px-4 rounded-xl transition-colors shrink-0"
+                >Bakiye Yükle</a
+              >
+            </div>
+          </div>
+
+          <!-- Hediye Detayı (Eşya) -->
+          <div
+            id="panel-item"
+            class="hidden bg-white rounded-3xl p-6 border border-gray-100 shadow-sm transition-opacity duration-300"
+          >
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">Gönderilecek Eşya</h3>
+
+            {% assign unused_items_count = 0 %}
+            {% for item in customer.chest %}
+              {% unless item.used %}
+                {% assign unused_items_count = unused_items_count | plus: 1 %}
+              {% endunless %}
+            {% endfor %}
+
+            {% if unused_items_count == 0 %}
+              <div class="py-10 text-center bg-gray-50 rounded-2xl border border-gray-200 border-dashed">
+                <div class="text-3xl mb-3">📭</div>
+                <p class="text-gray-500 font-bold text-sm">Sandığınızda gönderilebilir hiç eşya yok.</p>
+              </div>
+            {% else %}
+              <div
+                class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar"
+                id="chest-items-grid"
+              >
+                {% for item in customer.chest %}
+                  {% unless item.used %}
+                    <button
+                      type="button"
+                      class="chest-item-btn relative p-4 rounded-2xl border transition-all text-center flex flex-col items-center gap-3 border-gray-200 hover:border-primary/50 hover:shadow-md bg-white"
+                      data-item-id="{{ item.id }}"
+                    >
+                      <div class="item-check absolute top-2 right-2 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center shadow-sm hidden">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                      </div>
+                      <div class="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-2xl shadow-sm border border-gray-100">
+                        🎁
+                      </div>
+                      <div class="font-bold text-sm text-gray-900 line-clamp-2">{{ item.product.name }}</div>
+                    </button>
+                  {% endunless %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Sağ Kolon: Alıcı Seçimi ve Gönder -->
+        <div class="space-y-6">
+          <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">Kime Gönderilecek?</h3>
+
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                  <svg
+                    id="search-icon-idle"
+                    class="w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  <svg
+                    id="search-icon-loading"
+                    class="hidden w-5 h-5 text-primary animate-spin"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="Kullanıcı adını @ olmadan yazın..."
+                  class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-medium text-gray-900 placeholder-gray-400"
+                >
+              </div>
+              <button
+                type="button"
+                id="search-btn"
+                class="px-8 py-4 bg-gray-900 hover:bg-black text-white font-bold rounded-2xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              >
+                Kullanıcı Bul
+              </button>
+            </div>
+
+            <!-- Seçilen Kullanıcı (Başlangıçta Gizli) -->
+            <div
+              id="selected-user-card"
+              class="hidden mt-6 p-6 rounded-2xl border-2 border-primary/20 bg-primary/5 flex items-center gap-5 transition-opacity duration-300"
+            >
+              <div class="w-16 h-16 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0">
+                <img id="selected-user-avatar" src="" alt="" class="w-full h-full object-cover">
+              </div>
+              <div class="flex-1">
+                <h4 id="selected-user-username" class="text-xl font-black text-gray-900"></h4>
+                <p id="selected-user-email" class="text-sm font-medium text-gray-500"></p>
+              </div>
+              <button
+                type="button"
+                id="clear-user-btn"
+                class="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 flex items-center justify-center transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Gönder Butonu Alt Kısım -->
+          <div>
+            <button
+              type="submit"
+              id="submit-btn"
+              disabled
+              class="w-full bg-gray-900 hover:bg-black text-white text-lg font-bold py-4 px-8 rounded-2xl transition-all shadow-md flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              <svg
+                id="submit-icon-idle"
+                class="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+              <svg
+                id="submit-icon-loading"
+                class="hidden w-5 h-5 animate-spin text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <span id="submit-text">Hediyeyi Gönder</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- JS Mantığı -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Durum Değişkenleri
+        let currentGiftType = 'balance'; // 'balance' veya 'item'
+        let currentSelectedUser = null;
+        let currentSelectedChestItemId = null;
+        const currentUserBalance = {{ customer.balance | default: 0 }};
+        const currentUserId = '{{ customer.id }}';
+
+        // Element Referansları
+        const typeBtns = document.querySelectorAll('.gift-type-btn');
+        const panelBalance = document.getElementById('panel-balance');
+        const panelItem = document.getElementById('panel-item');
+        const chestItemBtns = document.querySelectorAll('.chest-item-btn');
+        const amountInput = document.getElementById('amount-input');
+        
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const iconIdle = document.getElementById('search-icon-idle');
+        const iconLoading = document.getElementById('search-icon-loading');
+        
+        const selectedUserCard = document.getElementById('selected-user-card');
+        const clearUserBtn = document.getElementById('clear-user-btn');
+        
+        const submitBtn = document.getElementById('submit-btn');
+        const submitText = document.getElementById('submit-text');
+        const submitIdle = document.getElementById('submit-icon-idle');
+        const submitLoading = document.getElementById('submit-icon-loading');
+
+        const notifContainer = document.getElementById('notification-container');
+        const notifMessage = document.getElementById('notification-message');
+        const notifIcon = document.getElementById('notification-icon');
+
+        // Bildirim Gösterme Fonksiyonu
+        function showNotification(msg, isError = true) {
+          notifContainer.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'border-red-100', 'bg-green-50', 'text-green-600', 'border-green-100');
+          notifMessage.textContent = msg;
+          
+          if (isError) {
+            notifContainer.classList.add('bg-red-50', 'text-red-600', 'border-red-100');
+            notifIcon.setAttribute('d', 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z');
+          } else {
+            notifContainer.classList.add('bg-green-50', 'text-green-600', 'border-green-100');
+            notifIcon.setAttribute('d', 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z');
+          }
+        }
+
+        // Gönder Butonu Durumunu Güncelleme
+        function updateSubmitButtonState() {
+          let isValid = false;
+          const amt = parseFloat(amountInput.value) || 0;
+          const warningBox = document.getElementById('insufficient-balance-warning');
+          
+          if (currentGiftType === 'balance') {
+            if (amt > 0 && currentUserBalance < amt) {
+              warningBox.classList.remove('hidden');
+            } else {
+              warningBox.classList.add('hidden');
+            }
+          } else {
+            warningBox.classList.add('hidden');
+          }
+
+          if (currentSelectedUser) {
+            if (currentGiftType === 'balance') {
+              if (amt > 0 && currentUserBalance >= amt) {
+                isValid = true;
+              }
+            } else if (currentGiftType === 'item') {
+              if (currentSelectedChestItemId) {
+                isValid = true;
+              }
+            }
+          }
+          submitBtn.disabled = !isValid;
+        }
+
+        // Hediye Türü Değiştirme
+        typeBtns.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const type = btn.getAttribute('data-type');
+            currentGiftType = type;
+            
+            // Tüm butonları pasif yap
+            typeBtns.forEach(b => {
+              b.classList.remove('border-primary', 'ring-4', 'ring-primary/10', 'bg-primary/5');
+              b.classList.add('border-gray-200', 'hover:border-primary/40', 'bg-gray-50/50');
+              b.querySelector('.type-check').classList.add('hidden');
+            });
+            
+            // Tıklananı aktif yap
+            btn.classList.add('border-primary', 'ring-4', 'ring-primary/10', 'bg-primary/5');
+            btn.classList.remove('border-gray-200', 'hover:border-primary/40', 'bg-gray-50/50');
+            btn.querySelector('.type-check').classList.remove('hidden');
+
+            // Panelleri gizle/göster
+            if (type === 'balance') {
+              panelBalance.classList.remove('hidden');
+              panelItem.classList.add('hidden');
+            } else {
+              panelBalance.classList.add('hidden');
+              panelItem.classList.remove('hidden');
+            }
+
+            updateSubmitButtonState();
+            notifContainer.classList.add('hidden'); // hataları temizle
+          });
+        });
+
+        // Eşya Seçimi
+        chestItemBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            currentSelectedChestItemId = btn.getAttribute('data-item-id');
+            
+            // Diğerlerini pasif yap
+            chestItemBtns.forEach(b => {
+              b.classList.remove('ring-2', 'ring-primary', 'border-primary', 'bg-primary/5');
+              b.classList.add('border-gray-200', 'hover:border-primary/50', 'bg-white');
+              b.querySelector('.item-check').classList.add('hidden');
+            });
+            
+            // Seçileni aktif yap
+            btn.classList.add('ring-2', 'ring-primary', 'border-primary', 'bg-primary/5');
+            btn.classList.remove('border-gray-200', 'hover:border-primary/50', 'bg-white');
+            btn.querySelector('.item-check').classList.remove('hidden');
+
+            updateSubmitButtonState();
+          });
+        });
+
+        // Tutar Girişi
+        amountInput.addEventListener('input', updateSubmitButtonState);
+
+        // Kullanıcı Arama
+        async function performSearch() {
+          const query = searchInput.value.trim();
+          if (!query) {
+            showNotification("Lütfen bir kullanıcı adı girin.");
+            return;
+          }
+
+          iconIdle.classList.add('hidden');
+          iconLoading.classList.remove('hidden');
+          searchBtn.disabled = true;
+          searchInput.disabled = true;
+          notifContainer.classList.add('hidden');
+
+          try {
+            const res = await fetch(`/api/storefront/v2/users/@${query}`);
+            const data = await res.json();
+            
+            // Eğer dönen veri doğrudan kullanıcı objesi ise (data.id var ise) veya data.data içinde ise
+            const foundUser = data.data ? data.data : (data.id ? data : null);
+            
+            if (!res.ok || !foundUser) {
+              throw new Error("Kullanıcı bulunamadı.");
+            }
+            
+            if (foundUser.id === currentUserId) {
+              showNotification("Kendinize hediye gönderemezsiniz.");
+              currentSelectedUser = null;
+              selectedUserCard.classList.add('hidden');
+              return;
+            }
+            
+            currentSelectedUser = foundUser;
+            
+            // Arayüzü güncelle
+            document.getElementById('selected-user-avatar').src = `https://mc-heads.net/avatar/${foundUser.username}/64`;
+            document.getElementById('selected-user-username').textContent = foundUser.username;
+            document.getElementById('selected-user-email').textContent = foundUser.email || 'E-posta belirtilmemiş';
+            
+            selectedUserCard.classList.remove('hidden');
+            searchInput.value = "";
+            
+          } catch(err) {
+            showNotification("Kullanıcı bulunamadı.");
+            currentSelectedUser = null;
+            selectedUserCard.classList.add('hidden');
+          } finally {
+            iconIdle.classList.remove('hidden');
+            iconLoading.classList.add('hidden');
+            searchBtn.disabled = false;
+            searchInput.disabled = false;
+            updateSubmitButtonState();
+          }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+          }
+        });
+
+        // Seçilen Kullanıcıyı İptal Etme
+        clearUserBtn.addEventListener('click', () => {
+          currentSelectedUser = null;
+          selectedUserCard.classList.add('hidden');
+          updateSubmitButtonState();
+        });
+
+        // Hediyeyi Gönder (Form Submit)
+        document.getElementById('gift-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          if (!currentSelectedUser) return;
+
+          // Loading durumu
+          submitBtn.disabled = true;
+          submitIdle.classList.add('hidden');
+          submitLoading.classList.remove('hidden');
+          submitText.textContent = "İşleniyor...";
+          notifContainer.classList.add('hidden');
+
+          try {
+            if (currentGiftType === 'balance') {
+              const amt = parseFloat(amountInput.value);
+              
+              const res = await fetch(`/api/storefront/users/me/balance/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  targetUserId: currentSelectedUser.id, 
+                  amount: amt 
+                })
+              });
+              
+              const data = await res.json();
+              if (res.ok && data.success) {
+                showNotification(`${amt.toFixed(2)} {{ store.currency | default: 'TRY' }} başarıyla ${currentSelectedUser.username} adlı kullanıcıya gönderildi!`, false);
+                setTimeout(() => window.location.reload(), 2000);
+              } else {
+                showNotification(data.message || "Hediye gönderilemedi.");
+                resetSubmitBtn();
+              }
+            } else {
+              const res = await fetch(`/api/storefront/chest/me/gift/${currentSelectedUser.id}/${currentSelectedChestItemId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              
+              const data = await res.json();
+              if (res.ok && data.success) {
+                showNotification(`Eşya başarıyla hediye edildi!`, false);
+                setTimeout(() => window.location.reload(), 2000);
+              } else {
+                showNotification(data.message || "Hediye gönderilemedi.");
+                resetSubmitBtn();
+              }
+            }
+          } catch(err) {
+            showNotification("Beklenmeyen bir sunucu hatası oluştu. Lütfen tekrar deneyin.");
+            resetSubmitBtn();
+          }
+        });
+
+        function resetSubmitBtn() {
+          submitIdle.classList.remove('hidden');
+          submitLoading.classList.add('hidden');
+          submitText.textContent = "Hediyeyi Gönder";
+          updateSubmitButtonState();
+        }
+
+      });
+    </script>
+  {% else %}
+    <!-- Giriş Yapmamış Kullanıcı -->
+    <div class="w-full max-w-2xl mx-auto rounded-[24px] bg-white p-8 md:p-12 text-center border border-gray-100 shadow-sm flex flex-col items-center mt-12">
+      <div class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center text-primary border border-gray-100 mb-6">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <h2 class="text-3xl font-black text-gray-900 mb-3 tracking-tight">Giriş Gerekli</h2>
+      <p class="text-gray-500 font-medium mb-8">
+        Arkadaşlarınıza hediye gönderebilmek için öncelikle hesabınıza giriş yapmanız gerekmektedir.
+      </p>
+      <a
+        href="/login?redirect=/gift"
+        class="bg-gray-900 hover:bg-black text-white font-bold py-4 px-8 rounded-2xl transition-colors"
+      >
+        Giriş Yap / Kayıt Ol
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  /* Custom scrollbar for items grid */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+</style>

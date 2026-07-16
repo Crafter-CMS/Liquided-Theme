@@ -1,0 +1,243 @@
+{% if customer %}
+  <div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-8 min-h-[60vh]">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+      <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+      </a>
+      <span>/</span>
+      <span class="text-gray-900">Kupon Kullan</span>
+    </div>
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-black text-gray-900 tracking-tight">Kupon Bozdur</h1>
+      <p class="text-gray-500 mt-2">
+        Sunucumuz tarafından size verilmiş olan hediye kuponunuzu buradan bozdurabilirsiniz.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- Ana Bölüm -->
+      <div class="lg:col-span-8">
+        <div class="bg-white border border-gray-100 rounded-3xl p-6 md:p-10 shadow-sm">
+          <!-- Başarı Mesajı -->
+          <div id="redeem-success" class="hidden mb-8 p-6 rounded-2xl bg-green-50 border border-green-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-lg font-black text-green-900 mb-1">Tebrikler! Kupon Başarıyla Kullanıldı</h4>
+                <p id="redeem-success-text" class="text-green-700 font-medium mb-4">
+                  Ödülleriniz hesabınıza tanımlandı.
+                </p>
+                <div id="redeem-rewards" class="space-y-2">
+                  <!-- JS ile ödüller buraya eklenecek -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hata Mesajı -->
+          <div id="redeem-error" class="hidden mb-8 p-6 rounded-2xl bg-red-50 border border-red-100">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-lg font-black text-red-900 mb-1">Kupon Geçersiz</h4>
+                <p id="redeem-error-text" class="text-red-700 font-medium">Bu kupon kodunu kullanamazsınız.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kupon Formu -->
+          <form id="redeem-form">
+            <div class="mb-6">
+              <label class="block text-sm font-bold text-gray-900 mb-3">Kupon Kodu</label>
+              <input
+                type="text"
+                id="input-code"
+                placeholder="XXXX-XXXX-XXXX"
+                class="w-full px-6 py-5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-900 font-black text-lg tracking-widest placeholder:font-medium placeholder:text-gray-400"
+                autocomplete="off"
+              >
+            </div>
+
+            <button
+              type="submit"
+              id="btn-submit"
+              class="w-full sm:w-auto px-10 py-5 bg-primary text-white font-black rounded-2xl hover:brightness-110 transition-all shadow-md shadow-primary/30 flex items-center justify-center gap-2 text-lg disabled:opacity-50"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+              </svg>
+              Kuponu Bozdur
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Bilgi Paneli -->
+      <div class="lg:col-span-4">
+        <div class="bg-gray-50 border border-gray-100 rounded-3xl p-6 shadow-sm space-y-6">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center border border-gray-100 shadow-sm">
+              <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-black text-gray-900">Bilgilendirme</h3>
+          </div>
+
+          <ul class="space-y-4 text-sm font-medium text-gray-600">
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Eğer kupon kodu geçerliyse, kazandığınız ödüller doğrudan hesabınıza tanımlanır.
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Bakiye ödülleri cüzdanınıza eklenirken, eşya ödülleri site envanterinize (sandığınıza) gönderilir.
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              Kuponlar tek kullanımlıktır ve başka hesaplara aktarılamaz.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('redeem-form');
+      const inputCode = document.getElementById('input-code');
+      const btnSubmit = document.getElementById('btn-submit');
+
+      const boxSuccess = document.getElementById('redeem-success');
+      const textSuccess = document.getElementById('redeem-success-text');
+      const rewardsList = document.getElementById('redeem-rewards');
+
+      const boxError = document.getElementById('redeem-error');
+      const textError = document.getElementById('redeem-error-text');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const code = inputCode.value.trim();
+        if (!code) return;
+
+        boxSuccess.classList.add('hidden');
+        boxError.classList.add('hidden');
+        rewardsList.innerHTML = '';
+
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          Kontrol Ediliyor...
+        `;
+
+        try {
+          const res = await fetch('/api/storefront/redeem-codes/use', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok && !data.error) {
+            boxSuccess.classList.remove('hidden');
+            textSuccess.innerText = data.message || 'Kupon başarıyla bozduruldu.';
+            inputCode.value = '';
+
+            if (data.bonus || (data.products && data.products.length > 0)) {
+              let html = '';
+              if (data.bonus) {
+                html += `
+                  <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-green-100 shadow-sm mt-4">
+                    <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center font-black text-xl border border-green-100">₺</div>
+                    <div>
+                      <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Kazanılan Bakiye</div>
+                      <div class="font-black text-green-600">+${data.bonus} ₺</div>
+                    </div>
+                  </div>
+                `;
+              }
+              if (data.products && data.products.length > 0) {
+                const pList = data.products
+                  .map(
+                    (p) => `
+                  <li class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    <span class="font-bold text-gray-700">${p.name}</span>
+                  </li>
+                `
+                  )
+                  .join('');
+                html += `
+                  <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-green-100 shadow-sm mt-2">
+                    <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+                    </div>
+                    <div>
+                      <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1 mt-0.5">Kazanılan Ürünler</div>
+                      <ul class="space-y-1 text-sm">${pList}</ul>
+                    </div>
+                  </div>
+                `;
+              }
+              rewardsList.innerHTML = html;
+            }
+          } else {
+            boxError.classList.remove('hidden');
+            textError.innerText = data.message || data.error || 'Kupon geçersiz veya kullanılmış.';
+          }
+        } catch (err) {
+          boxError.classList.remove('hidden');
+          textError.innerText = 'Sunucuyla bağlantı kurulamadı.';
+        } finally {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = `
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+            Kuponu Bozdur
+          `;
+        }
+      });
+    });
+  </script>
+{% else %}
+  <div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 min-h-[60vh] flex items-center justify-center">
+    <div class="bg-white border border-gray-100 rounded-3xl p-10 shadow-sm max-w-lg w-full text-center">
+      <div class="w-20 h-20 mx-auto rounded-2xl bg-gray-50 border-2 border-gray-100 flex items-center justify-center mb-6">
+        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <h2 class="text-3xl font-black text-gray-900 mb-3">Giriş Yapmalısınız</h2>
+      <p class="text-gray-500 font-medium mb-8 leading-relaxed">
+        Kupon kodlarını kullanabilmek için hesabınıza giriş yapmanız gerekmektedir.
+      </p>
+      <a
+        href="/auth"
+        class="flex items-center justify-center gap-2 w-full px-8 py-4 bg-primary text-white font-black rounded-2xl hover:brightness-110 transition-all shadow-md shadow-primary/30 active:scale-95 text-lg"
+      >
+        Giriş Yap
+      </a>
+    </div>
+  </div>
+{% endif %}

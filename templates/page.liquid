@@ -1,0 +1,37 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 min-h-[60vh]">
+  <!-- Breadcrumb -->
+  <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100 mb-8 mx-auto md:mx-0">
+    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">{{ page.title }}</span>
+  </div>
+
+  <div class="max-w-4xl mx-auto bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-sm relative overflow-hidden">
+    
+    <!-- Dekoratif Arkaplan -->
+    <div class="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-br-[100px] -ml-8 -mt-8 opacity-50"></div>
+    <div class="absolute bottom-0 right-0 w-32 h-32 bg-primary/5 rounded-tl-[100px] -mr-8 -mb-8 opacity-50"></div>
+
+    <div class="relative z-10">
+      <header class="mb-10 border-b border-gray-100 pb-8 text-center">
+
+        <h1 class="text-4xl font-black text-gray-900 tracking-tight mb-3">
+          {{ page.title }}
+        </h1>
+        {% if page.metaDescription %}
+          <p class="text-lg text-gray-500 font-medium max-w-2xl mx-auto">
+            {{ page.metaDescription }}
+          </p>
+        {% endif %}
+      </header>
+
+      <article class="prose prose-gray max-w-none prose-headings:font-black prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:font-medium prose-a:text-primary hover:prose-a:text-primary/80 prose-img:rounded-xl">
+        {{ page.content }}
+      </article>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ settings.maintenance.title | default: 'Bakım Çalışması' }} | {{ website.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: {{ settings.colors.primary | default: '#0056b3' }};
+      --color-bg: {{ settings.colors.background | default: '#f8f9fa' }};
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--color-bg);
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--color-primary)',
+            base: 'var(--color-bg)',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Rajdhani', 'sans-serif'],
+          },
+        },
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 antialiased selection:bg-primary selection:text-white">
+
+  <div class="max-w-2xl w-full bg-white border border-yellow-100 rounded-3xl p-8 md:p-12 shadow-sm text-center relative overflow-hidden">
+    
+    <!-- Dekoratif Arkaplan -->
+    <div class="absolute top-0 left-0 w-32 h-32 bg-yellow-50 rounded-br-[100px] -ml-8 -mt-8 opacity-50"></div>
+    <div class="absolute bottom-0 right-0 w-32 h-32 bg-yellow-50 rounded-tl-[100px] -mr-8 -mb-8 opacity-50"></div>
+
+    <div class="relative z-10">
+      <div class="w-24 h-24 bg-yellow-50 text-yellow-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm border border-yellow-100">
+        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>
+
+      <h1 class="text-4xl font-black text-gray-900 tracking-tight mb-4">
+        {{ settings.maintenance.title | default: 'Bakım Çalışması' }}
+      </h1>
+      <p class="text-lg text-gray-500 font-medium mb-8 max-w-lg mx-auto">
+        {{ settings.maintenance.description | default: 'Şu anda sistemlerimizde planlı bir bakım çalışması yürütülmektedir. Çok yakında geri döneceğiz. Anlayışınız için teşekkür ederiz.' }}
+      </p>
+
+      <div class="flex flex-col items-center gap-4 mt-4">
+        <a href="/auth/sign-in" class="bg-gray-50 hover:bg-gray-100 transition-colors rounded-2xl p-4 inline-block font-bold text-gray-600 border border-gray-100">
+          {{ settings.maintenance.footer_text | default: 'Yetkiniz varsa giriş yapıp görüntüleyebilirsiniz' }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

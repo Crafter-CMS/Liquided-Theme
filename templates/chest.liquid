@@ -1,0 +1,200 @@
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-8 min-h-[50vh]">
+  <!-- Breadcrumb -->
+  <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/store" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">Sandığım</span>
+  </div>
+  {% if customer %}
+    {% assign total = chestItems.size %}
+    {% assign used = 0 %}
+    {% for item in chestItems %}
+      {% if item.used %}
+        {% assign used = used | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+    {% assign available = total | minus: used %}
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
+      <!-- LEFT: Eşyalar Container -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-fit">
+        <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+          <h2 class="text-2xl font-black text-gray-900 flex items-center gap-3">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            Eşyalarım
+          </h2>
+          <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-lg text-sm">{{- total }} Eşya</span>
+        </div>
+
+        {% if total == 0 %}
+          <div id="chest-empty" class="text-center py-16">
+            <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-black text-gray-900 mb-2">Sandığınız boş</h3>
+            <p class="text-gray-500 font-medium mb-8 max-w-md mx-auto">
+              Henüz hiç eşyanız yok. Mağazadan eşya satın alarak sandığınızı doldurmaya başlayın!
+            </p>
+            <a
+              href="/store"
+              class="inline-flex items-center gap-2 bg-primary text-white font-bold rounded-xl px-8 py-4 hover:brightness-110 transition-all shadow-lg shadow-primary/30"
+            >
+              Mağazaya Git
+            </a>
+          </div>
+        {% else %}
+          <div id="chest-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for item in chestItems %}
+              <div class="relative bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col h-full {% if item.used %}opacity-60 bg-gray-50{% endif %}">
+                {% if item.used %}
+                  <div class="absolute top-4 left-4 z-10 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm">
+                    Kullanılmış
+                  </div>
+                {% endif %}
+
+                <div class="w-full aspect-square bg-gray-50 flex items-center justify-center p-6 border-b border-gray-100 relative">
+                  <img
+                    src="{{ item.product.image | default: 'https://via.placeholder.com/150?text=No+Image' }}"
+                    alt="{{ item.product.name }}"
+                    class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300 {% if item.used %}grayscale{% endif %}"
+                  >
+                </div>
+
+                <div class="p-5 flex-1 flex flex-col">
+                  <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                    {{ item.product.name | default: 'Bilinmeyen Eşya' }}
+                  </h3>
+                  {% if item.product.description %}
+                    <p class="text-sm text-gray-500 line-clamp-2 mb-4">{{ item.product.description }}</p>
+                  {% endif %}
+
+                  <div class="mt-auto pt-4">
+                    {% if item.used %}
+                      <button
+                        disabled
+                        class="w-full bg-gray-200 text-gray-500 font-bold rounded-xl py-3 cursor-not-allowed"
+                      >
+                        Kullanılmış
+                      </button>
+                    {% else %}
+                      <button
+                        id="use-btn-{{ item.id }}"
+                        onclick="useItem('{{ item.id }}', this)"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl py-3 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2"
+                      >
+                        Kullan
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT: İstatistikler Sidebar -->
+      <div class="space-y-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sticky top-24">
+          <h2 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            İstatistikler
+          </h2>
+
+          <div class="space-y-4">
+            <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Toplam Eşya</p>
+                <p class="text-2xl font-black text-blue-900">{{ total }}</p>
+              </div>
+              <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Kullanılabilir</p>
+                <p class="text-2xl font-black text-emerald-900">{{ available }}</p>
+              </div>
+              <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="bg-gray-50/50 border border-gray-200/60 rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kullanılmış</p>
+                <p class="text-2xl font-black text-gray-900">{{ used }}</p>
+              </div>
+              <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const customerId = '{{ customer.id | default: customer._id }}';
+      let useTimeouts = {};
+
+      async function useItem(itemId, btn) {
+        if (!btn.classList.contains('confirm-mode')) {
+          const ogText = btn.innerHTML;
+          btn.dataset.ogText = ogText;
+          btn.classList.add('confirm-mode', 'bg-orange-500', 'hover:bg-orange-600', 'shadow-orange-500/30');
+          btn.classList.remove('bg-emerald-500', 'hover:bg-emerald-600', 'shadow-emerald-500/30');
+          btn.innerHTML = `<svg class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Emin misin?`;
+
+          useTimeouts[itemId] = setTimeout(() => {
+            btn.classList.remove('confirm-mode', 'bg-orange-500', 'hover:bg-orange-600', 'shadow-orange-500/30');
+            btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600', 'shadow-emerald-500/30');
+            btn.innerHTML = btn.dataset.ogText;
+          }, 3000);
+          return;
+        }
+
+        clearTimeout(useTimeouts[itemId]);
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Kullanılıyor...`;
+
+        try {
+          const res = await fetch(`/api/storefront/v1/chest/${customerId}/use/${itemId}`, { method: 'POST' });
+          const data = await res.json();
+          if (res.ok || data.success) {
+            window.showToast?.('Eşya başarıyla kullanıldı!', 'success');
+            setTimeout(() => location.reload(), 1500); // Reload to show used status
+          } else {
+            throw new Error(data.message || 'Kullanım hatası');
+          }
+        } catch (e) {
+          window.showToast?.(e.message, 'error');
+          btn.disabled = false;
+          btn.classList.remove('confirm-mode', 'bg-orange-500', 'hover:bg-orange-600', 'shadow-orange-500/30');
+          btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600', 'shadow-emerald-500/30');
+          btn.innerHTML = btn.dataset.ogText;
+        }
+      }
+    </script>
+  {% else %}
+    <script>
+      window.location.href = '/auth/sign-in?return=/chest';
+    </script>
+  {% endif %}
+</div>

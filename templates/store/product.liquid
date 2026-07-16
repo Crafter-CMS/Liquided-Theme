@@ -1,0 +1,113 @@
+<!-- STORE > PRODUCT (ÜRÜN DETAY) -->
+<div class="container max-w-[1200px] mx-auto px-4 mt-8 mb-24 space-y-8">
+  <!-- Breadcrumb -->
+  <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/store" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <a href="/store/{{ server.slug }}" class="hover:text-primary transition-colors">
+      {{- server.name | default: 'Sunucu' -}}
+    </a>
+    <span>/</span>
+    <a href="/store/{{ server.slug }}/{{ category.slug }}" class="hover:text-primary transition-colors">
+      {{- category.name | default: 'Kategori' -}}
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">{{ product.name }}</span>
+  </div>
+
+  <div class="bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-sm flex flex-col md:flex-row gap-12">
+    <!-- SOL: Ürün Görseli -->
+    <div class="w-full md:w-5/12 flex-shrink-0">
+      <div class="w-full aspect-square bg-gray-50 rounded-3xl border border-gray-100 p-8 flex items-center justify-center relative">
+        {% if product.discountValue and product.discountValue > 0 %}
+          <div class="absolute top-6 left-6 z-10 flex gap-2">
+            <span class="bg-red-500 text-white text-[12px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
+              -{{ product.discountValue -}}
+              {%- if product.discountType == 'percentage' %}%{% else %}₺{% endif %} İndirim
+            </span>
+          </div>
+        {% endif %}
+
+        {% if product.image != blank %}
+          <img
+            src="{{ product.image }}"
+            alt="{{ product.name }}"
+            class="w-full h-full object-contain filter drop-shadow-xl hover:scale-105 transition-transform duration-500"
+          >
+        {% else %}
+          <svg class="w-32 h-32 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- SAĞ: Ürün Bilgileri -->
+    <div class="w-full md:w-7/12 flex flex-col justify-center">
+      <div class="mb-6">
+        <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight leading-tight">
+          {{ product.name }}
+        </h1>
+
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <!-- Stok Durumu -->
+          {% if product.stock <= 0 %}
+            <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Stok Sınırsız
+            </span>
+          {% elsif product.stock <= 10 %}
+            <span class="bg-orange-50 text-orange-600 border border-orange-200 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+              Son {{ product.stock }} Adet!
+            </span>
+          {% else %}
+            <span class="bg-gray-50 text-gray-600 border border-gray-200 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+              Stok: {{ product.stock }}
+            </span>
+          {% endif %}
+
+          <!-- Etiketler (Tags) -->
+          {% if product.tags and product.tags.size > 0 %}
+            {% for tag in product.tags %}
+              <span class="bg-blue-50 text-primary border border-blue-100 text-xs font-bold px-3 py-1.5 rounded-lg"
+                >#{{ tag -}}
+              </span>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Açıklama -->
+      <div class="prose prose-gray max-w-none mb-8 text-gray-500 font-medium leading-relaxed">
+        {{ product.description | default: 'Bu ürün için herhangi bir açıklama girilmemiş.' }}
+      </div>
+
+      <!-- Fiyat & Sepete Ekle -->
+      <div class="mt-auto bg-gray-50 p-6 rounded-3xl border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div>
+          <span class="block text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Toplam Fiyat</span>
+          <div class="flex items-end gap-3">
+            <div class="text-4xl font-black text-primary leading-none">{{ product.price }} ₺</div>
+          </div>
+        </div>
+
+        <button
+          data-product="{{ product | json | escape }}"
+          onclick="window.addToCart(JSON.parse(this.dataset.product))"
+          class="w-full sm:w-auto bg-primary hover:bg-blue-600 text-white text-lg font-black py-4 px-10 rounded-2xl transition-colors shadow-lg shadow-primary/30 flex items-center justify-center gap-3"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          Sepete Ekle
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

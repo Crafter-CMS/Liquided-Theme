@@ -1,0 +1,96 @@
+<!-- STORE > SERVER -->
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-12">
+  
+  <!-- Breadcrumb & Geri Dön -->
+  <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/store" class="hover:text-primary transition-colors flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </a>
+    <span>/</span>
+    <span class="text-gray-900">{{ server.name | default: 'Sunucu' }}</span>
+  </div>
+
+  <!-- Sunucu Karşılama Banner -->
+  <div class="w-full bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
+    {% if server.image != blank %}
+      <div class="shrink-0 relative z-10">
+        <img src="{{ server.image }}" class="w-32 h-32 md:w-48 md:h-48 object-contain rounded-2xl shadow-sm bg-gray-50 p-4 border border-gray-100">
+      </div>
+    {% endif %}
+    
+    <div class="flex-grow relative z-10">
+      <h1 class="text-3xl md:text-5xl font-black text-gray-900 mb-3 tracking-tight">
+        {{ server.name | default: 'Sunucuya Hoş Geldin' }}
+      </h1>
+      <p class="text-lg text-gray-500 font-medium max-w-3xl">
+        Aşağıdaki kategorilerden birini seçerek bu sunucuda kullanabileceğin özel eşyaları, yetkileri ve üyelikleri inceleyebilirsin.
+      </p>
+    </div>
+  </div>
+
+  <!-- Kategoriler Grid -->
+  <div>
+    <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-6 flex items-center gap-3">
+      <span class="w-2 h-8 bg-primary rounded-full"></span>
+      Kategoriler
+    </h3>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% if categories and categories.size > 0 %}
+        {% for cat in categories %}
+          <!-- Kategori Kartı -->
+          <a
+            href="/store/{{ server.slug }}/{{ cat.slug }}"
+            class="group rounded-3xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative block"
+          >
+            <!-- Arka Plan Resmi (Kendi Boyutuyla) -->
+            {% if cat.image != blank %}
+              <img
+                src="{{ cat.image }}"
+                class="w-full h-auto object-contain block group-hover:scale-105 transition-transform duration-500"
+                alt="{{ cat.name }}"
+              >
+            {% else %}
+              <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                <svg class="w-16 h-16 text-gray-400 group-hover:scale-110 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+              </div>
+            {% endif %}
+            
+            <!-- Yazı Okunabilirliği İçin İnce Karartma -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent mix-blend-multiply group-hover:opacity-80 transition-opacity duration-300"></div>
+
+            <!-- Kategori Metinleri (Resmin Üstünde) -->
+            <div class="absolute inset-0 p-6 flex flex-col justify-end z-10 pointer-events-none">
+              <h4 class="text-2xl font-black text-white leading-tight mb-1 drop-shadow-md group-hover:text-primary transition-colors">
+                {{ cat.name }}
+              </h4>
+              {% if cat.description != blank %}
+                <p class="text-sm text-gray-200 line-clamp-2 drop-shadow-sm font-medium">
+                  {{ cat.description }}
+                </p>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      {% else %}
+        <!-- Mockup Kategori -->
+        <a href="#" class="group bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative">
+          <div class="h-48 overflow-hidden relative bg-gray-50 flex items-center justify-center">
+            <svg class="w-16 h-16 text-gray-300 group-hover:scale-110 group-hover:text-primary transition-all duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <div class="p-6 flex flex-col flex-grow">
+            <h4 class="text-xl font-black text-gray-900 leading-tight mb-2 group-hover:text-primary transition-colors">VIP Üyelikler</h4>
+            <p class="text-sm text-gray-500 line-clamp-2 mt-auto">Sunucudaki VIP üyeliklere göz atın.</p>
+          </div>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+</div>

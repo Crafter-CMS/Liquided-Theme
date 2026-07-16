@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title | default: shop.name }}</title>
+    <meta name="description" content="{{ page_description | default: shop.name | append: ' - Minecraft Mağazası' }}">
+    {{ content_for_header }}
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --color-primary: {{ settings.colors.primary | default: '#0056b3' }};
+        --color-bg: {{ settings.colors.background | default: '#f8f9fa' }};
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: 'var(--color-primary)',
+              base: 'var(--color-bg)',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Rajdhani', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="{{ 'assets/style.css' | asset_url }}">
+
+    <!-- NProgress for smooth page transitions -->
+    <link rel="stylesheet" href="https://unpkg.com/nprogress@0.2.0/nprogress.css">
+    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+    <style>
+      #nprogress .bar {
+        background: var(--color-primary) !important;
+        height: 3px !important;
+      }
+      #nprogress .peg {
+        box-shadow: 0 0 10px var(--color-primary), 0 0 5px var(--color-primary) !important;
+      }
+      #nprogress .spinner {
+        display: none !important;
+      }
+
+      /* MPA View Transitions */
+      @view-transition {
+        navigation: auto;
+      }
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fade-out {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+      }
+      ::view-transition-old(root) {
+        animation: 200ms ease-out both fade-out;
+      }
+      ::view-transition-new(root) {
+        animation: 200ms ease-out both fade-in;
+      }
+
+      /* Marquee Animation */
+      @keyframes marquee {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+    </style>
+
+    {% if settings.integrations.google_analytics_id != blank %}
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id={{ settings.integrations.google_analytics_id }}"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ settings.integrations.google_analytics_id }}');
+      </script>
+    {% endif %}
+  </head>
+
+  <body class="bg-base text-gray-900 flex flex-col min-h-screen antialiased selection:bg-primary selection:text-white">
+    {% unless template == 'auth' %}
+      <!-- NAVBAR SECTION (Fixed & Transparent -> Solid White) -->
+      <header
+        id="site-navbar"
+        class="fixed top-0 w-full z-50 transition-all duration-300 bg-transparent border-b border-transparent text-white"
+      >
+        <div class="container max-w-[1400px] mx-auto px-4 flex items-center justify-between h-[70px]">
+          <!-- Mobile Menu Toggle (Left on mobile) -->
+          <button class="md:hidden flex items-center hover:opacity-75 transition-opacity" onclick="toggleMobileMenu()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+
+          <!-- Logo (Left on Desktop, Center on Mobile) -->
+          <a href="/" class="flex items-center gap-3 hover:scale-105 transition-transform duration-300 hidden md:flex">
+            {% if settings.logo %}
+              <img
+                src="{{ settings.logo }}"
+                alt="{{ shop.name }}"
+                class="h-10 object-contain drop-shadow-md"
+              >
+            {% else %}
+              <span class="font-display font-black text-xl tracking-wider drop-shadow-md">
+                {{- shop.name | upcase -}}
+              </span>
+            {% endif %}
+          </a>
+
+          <!-- Center: Navigation Links -->
+          <nav class="hidden md:flex items-center gap-8 h-full">
+            {% if settings.nav_links != blank %}
+              {% for link in settings.nav_links %}
+                <a
+                  href="{{ link.url }}"
+                  class="h-full flex items-center text-[15px] font-bold transition-all relative group {% if request.path == link.url %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
+                  {% if link.new_tab %}
+                    target="_blank"
+                  {% endif %}
+                >
+                  {{ link.title }}
+                  <span
+                    class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left {% if request.path == link.url %}scale-x-100{% endif %}"
+                  ></span>
+                </a>
+              {% endfor %}
+            {% else %}
+              <a
+                href="/"
+                class="h-full flex items-center text-[15px] font-bold transition-all relative group opacity-100"
+              >
+                Anasayfa
+                <span
+                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-100 transition-transform origin-left"
+                ></span>
+              </a>
+              <a
+                href="/store"
+                class="h-full flex items-center text-[15px] font-bold transition-all relative group opacity-80 hover:opacity-100"
+              >
+                Mağaza
+                <span
+                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
+                ></span>
+              </a>
+              <a
+                href="/forum"
+                class="h-full flex items-center text-[15px] font-bold transition-all relative group opacity-80 hover:opacity-100"
+              >
+                Forum
+                <span
+                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
+                ></span>
+              </a>
+              <a
+                href="/yardim"
+                class="h-full flex items-center text-[15px] font-bold transition-all relative group opacity-80 hover:opacity-100"
+              >
+                Yardım
+                <span
+                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
+                ></span>
+              </a>
+            {% endif %}
+          </nav>
+
+          <!-- Right: Auth Buttons & Cart -->
+          <div class="flex items-center gap-4">
+            <!-- Cart Button -->
+            <a
+              href="/cart"
+              id="nav-cart-btn"
+              class="relative p-2 transition-colors flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+              <!-- Badge will be populated via JS from localStorage -->
+              <span class="header-cart-badge hidden absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm"
+                >0</span
+              >
+            </a>
+
+            {% if customer %}
+              <!-- Desktop Profile Dropdown (Hover) -->
+              <div class="relative group hidden md:block py-4">
+                <a
+                  href="/profile"
+                  class="flex items-center gap-2 text-sm font-bold hover:opacity-80 transition-opacity cursor-pointer"
+                >
+                  <img
+                    src="https://mc-heads.net/avatar/{{ customer.username }}/32"
+                    class="w-8 h-8 rounded-full border-2 border-white/20 shadow-sm"
+                    alt=""
+                  >
+                  <span class="hidden sm:block drop-shadow-sm">{{ customer.username }}</span>
+                  <span
+                    id="nav-credit"
+                    class="hidden lg:block ml-1 px-2 py-0.5 bg-primary/20 backdrop-blur-sm text-white rounded-md text-xs border border-white/10"
+                  >
+                    {{- customer.balance | default: '0' }} ₺</span
+                  >
+                </a>
+
+                <!-- Dropdown Menu -->
+                <div class="absolute right-0 top-[100%] w-72 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right translate-y-2 group-hover:translate-y-0 text-gray-800 z-[100]">
+                  <!-- User Info -->
+                  <div class="p-4 border-b border-gray-50 flex items-center gap-3">
+                    <img
+                      src="https://mc-heads.net/avatar/{{ customer.username }}/48"
+                      class="w-12 h-12 rounded-full border-2 border-primary/20"
+                      alt=""
+                    >
+                    <div class="overflow-hidden">
+                      <div class="font-black text-gray-900 truncate">{{ customer.username }}</div>
+                      <div class="text-xs font-bold text-gray-500 truncate">{{ customer.email }}</div>
+                    </div>
+                  </div>
+
+                  <!-- Menu Grid -->
+                  <div class="p-3 grid grid-cols-2 gap-2">
+                    <a
+                      href="/wallet"
+                      class="flex flex-col items-center justify-center p-4 rounded-xl bg-gray-50 hover:bg-primary/5 hover:text-primary transition-colors text-center group/item border border-transparent hover:border-primary/10"
+                    >
+                      <svg
+                        class="w-6 h-6 mb-2 text-gray-400 group-hover/item:text-primary transition-colors"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span class="text-xs font-bold">Kredi Yükle</span>
+                    </a>
+
+                    <a
+                      href="/chest"
+                      class="flex flex-col items-center justify-center p-4 rounded-xl bg-gray-50 hover:bg-primary/5 hover:text-primary transition-colors text-center group/item border border-transparent hover:border-primary/10"
+                    >
+                      <svg
+                        class="w-6 h-6 mb-2 text-gray-400 group-hover/item:text-primary transition-colors"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                      </svg>
+                      <span class="text-xs font-bold">Sandık</span>
+                    </a>
+
+                    <a
+                      href="/profile"
+                      class="flex flex-col items-center justify-center p-4 rounded-xl bg-gray-50 hover:bg-primary/5 hover:text-primary transition-colors text-center group/item border border-transparent hover:border-primary/10"
+                    >
+                      <svg
+                        class="w-6 h-6 mb-2 text-gray-400 group-hover/item:text-primary transition-colors"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                      </svg>
+                      <span class="text-xs font-bold">Profil</span>
+                    </a>
+
+                    <a
+                      href="/profile/settings"
+                      class="flex flex-col items-center justify-center p-4 rounded-xl bg-gray-50 hover:bg-primary/5 hover:text-primary transition-colors text-center group/item border border-transparent hover:border-primary/10"
+                    >
+                      <svg
+                        class="w-6 h-6 mb-2 text-gray-400 group-hover/item:text-primary transition-colors"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                      <span class="text-xs font-bold">Ayarlar</span>
+                    </a>
+
+                    {% if customer.role.permissions and customer.role.permissions.size > 0 %}
+                      <a
+                        href="/admin"
+                        class="col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors text-center border border-purple-100"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                        <span class="text-xs font-bold">Yönetim Paneli</span>
+                      </a>
+                    {% endif %}
+                  </div>
+
+                  <!-- Logout -->
+                  <div class="p-3 border-t border-gray-50">
+                    <button
+                      onclick="logoutAccount()"
+                      class="w-full flex items-center justify-center gap-2 p-3 rounded-xl hover:bg-red-50 text-red-500 transition-colors text-center text-xs font-bold"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                      </svg>
+                      Çıkış Yap
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mobile Auth Toggle -->
+              <a
+                href="/profile"
+                class="md:hidden flex items-center gap-2 text-sm font-bold hover:opacity-80 transition-opacity"
+              >
+                <img
+                  src="https://mc-heads.net/avatar/{{ customer.username }}/32"
+                  class="w-8 h-8 rounded-full border-2 border-white/20 shadow-sm"
+                  alt=""
+                >
+              </a>
+
+            {% else %}
+              <a
+                href="/auth/sign-in"
+                class="hidden sm:flex items-center gap-1.5 text-sm font-bold opacity-90 hover:opacity-100 transition-opacity drop-shadow-sm"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                Giriş Yap
+              </a>
+              <a
+                href="/auth/sign-up"
+                class="bg-primary text-white text-sm font-bold px-5 py-2 rounded-lg hover:brightness-110 transition-all shadow-md shadow-primary/30 border border-white/10"
+              >
+                Kayıt Ol
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </header>
+
+      <!-- Mobile Menu Overlay -->
+      <div
+        id="mobile-menu-overlay"
+        class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"
+        onclick="toggleMobileMenu()"
+      ></div>
+
+      <!-- Mobile Menu Sidebar -->
+      <div
+        id="mobile-menu-sidebar"
+        class="fixed inset-y-0 left-0 z-[70] w-[85%] max-w-sm bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] flex flex-col"
+      >
+        <!-- Sidebar Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+          {% if settings.logo %}
+            <img src="{{ settings.logo }}" alt="{{ shop.name }}" class="h-8 object-contain">
+          {% else %}
+            <span class="font-display font-black text-2xl text-gray-900">{{ shop.name | upcase }}</span>
+          {% endif %}
+          <button
+            onclick="toggleMobileMenu()"
+            class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-all"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="flex flex-col p-4 text-lg font-bold text-gray-600 overflow-y-auto flex-grow gap-1">
+          {% if settings.nav_links != blank %}
+            {% for link in settings.nav_links %}
+              <a
+                href="{{ link.url }}"
+                class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all {% if request.path == link.url %}text-primary bg-primary/5{% endif %}"
+              >
+                <span>{{ link.title }}</span>
+                <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </a>
+            {% endfor %}
+          {% else %}
+            <a
+              href="/"
+              class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-primary bg-primary/5 transition-all"
+            >
+              <span>Ana Sayfa</span>
+              <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+            <a
+              href="/store"
+              class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all"
+            >
+              <span>Mağaza</span>
+              <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+            <a
+              href="/forum"
+              class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all"
+            >
+              <span>Forum</span>
+              <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- User / Auth Info -->
+        <div class="p-6 border-t border-gray-100 bg-gray-50/50">
+          {% if customer %}
+            <a
+              href="/profile"
+              class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm"
+            >
+              <img
+                src="https://mc-heads.net/avatar/{{ customer.username }}/48"
+                class="w-12 h-12 rounded-full border-2 border-primary/20"
+                alt=""
+              >
+              <div class="flex-grow">
+                <div class="font-black text-gray-900">{{ customer.username }}</div>
+                <div class="text-xs font-bold text-gray-500">
+                  Kredi: <span class="text-primary">{{ customer.balance | default: '0' }} ₺</span>
+                </div>
+              </div>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          {% else %}
+            <div class="flex flex-col gap-3">
+              <a
+                href="/auth/sign-in"
+                class="flex items-center justify-center w-full py-3.5 bg-white text-gray-900 font-bold rounded-2xl border border-gray-200 hover:border-gray-300 transition-colors shadow-sm"
+              >
+                Giriş Yap
+              </a>
+              <a
+                href="/auth/sign-up"
+                class="flex items-center justify-center w-full py-3.5 bg-primary text-white font-bold rounded-2xl hover:brightness-110 transition-colors shadow-md shadow-primary/30"
+              >
+                Kayıt Ol
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- BANNER SECTION (Hero Image) -->
+      <div
+        class="relative h-[300px] md:h-[380px] bg-cover bg-center flex items-center justify-center pt-[70px]"
+        style="background-image: url('{% if settings.header.banner %}{{ settings.header.banner }}{% else %}https://images.unsplash.com/photo-1627856013091-fed6e4e30025?q=80&w=2070&auto=format&fit=crop{% endif %}');"
+      >
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+
+        <div class="container max-w-[1400px] mx-auto px-4 relative z-10 w-full flex items-center justify-between">
+          <!-- Left: Server IP & Players -->
+          <div class="hidden md:flex flex-col items-start">
+            <button
+              onclick="copyIp('{{ settings.server_ip | default: 'play.minecraft.net' }}')"
+              class="flex items-center gap-4 hover:-translate-y-1 transition-all group"
+            >
+              <div class="w-16 h-16 bg-primary rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.3)] shadow-primary/40 flex items-center justify-center text-white border border-white/20 transition-transform group-hover:scale-105">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="text-left drop-shadow-md">
+                <div
+                  id="server-player-count"
+                  class="text-xs font-black text-gray-300 uppercase tracking-[0.2em] group-hover:text-white transition-colors"
+                >
+                  {% if statistics.onlinePlayers %}{{ statistics.onlinePlayers }}{% else %}YÜKLENİYOR...{% endif %}
+                  Çevrimiçi
+                </div>
+                <div class="text-[17px] font-black text-white tracking-widest mt-1 group-hover:text-primary transition-colors">
+                  {{ settings.server_ip | default: 'PLAY.SUNUCU.NET' }}
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Center: Logo -->
+          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 mt-4">
+            {% if settings.logo %}
+              <img
+                src="{{ settings.logo }}"
+                alt="{{ shop.name }}"
+                class="w-40 h-40 md:w-56 md:h-56 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+              >
+            {% else %}
+              <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] flex items-center justify-center font-display font-black text-3xl text-white border-4 border-white/20 backdrop-blur-md">
+                {{ shop.name | upcase }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Right: Discord -->
+          <div class="hidden md:flex flex-col items-end">
+            <a
+              href="{{ settings.discord_url | default: '#' }}"
+              target="_blank"
+              class="discord-invite-link flex items-center gap-4 hover:-translate-y-1 transition-all group"
+            >
+              <div class="text-right drop-shadow-md">
+                <div
+                  class="discord-live-count text-xs font-black text-gray-300 uppercase tracking-[0.2em] group-hover:text-white transition-colors"
+                  data-format="{count} ÜYE AKTİF"
+                >
+                  BAĞLANILIYOR...
+                </div>
+                <div class="text-[17px] font-black text-white tracking-widest mt-1 group-hover:text-[#5865F2] transition-colors">
+                  DISCORD'A KATIL
+                </div>
+              </div>
+              <div class="w-16 h-16 bg-[#5865F2] rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.3)] shadow-[#5865F2]/40 flex items-center justify-center text-white border border-white/20 transition-transform group-hover:scale-105">
+                <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-2.8443-.4272-5.6887-.4272-8.4674 0-.1636-.3993-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
+                </svg>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROMO BAR (Under Hero) -->
+      <div class="w-full bg-white border-b border-gray-100 shadow-sm relative z-20 overflow-hidden flex text-sm font-bold py-3">
+        <div class="flex whitespace-nowrap animate-[marquee_40s_linear_infinite] hover:[animation-play-state:paused] items-center">
+          {% assign loop_count = '1,2,3,4,5,6,7,8' | split: ',' %}
+          {% for i in loop_count %}
+            {% if settings.header.promo_texts != blank and settings.header.promo_texts.size > 0 %}
+              {% for promo in settings.header.promo_texts %}
+                <div
+                  class="inline-flex items-center gap-2 px-8 py-2 mx-4 rounded-xl shadow-sm border border-black/5"
+                  style="
+                    {% if promo.bg_color %}background-color: {{ promo.bg_color }};{% else %}background-color: #ffffff;{% endif %}
+                    {% if promo.text_color %}color: {{ promo.text_color }};{% else %}color: #1f2937;{% endif %}
+                  "
+                >
+                  <span
+                    class="w-2 h-2 rounded-full animate-pulse"
+                    style="background-color: {% if promo.text_color %}{{ promo.text_color }}{% else %}var(--color-primary){% endif %};"
+                  ></span>
+                  {{ promo.text }}
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="inline-flex items-center gap-2 px-8 py-2 mx-4 rounded-xl shadow-sm border border-gray-100 bg-white text-gray-800">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> 10TL üzeri yüklemelerde %50 Bonus
+                Kredi!
+              </div>
+              <div class="inline-flex items-center gap-2 px-8 py-2 mx-4 rounded-xl shadow-sm border border-gray-100 bg-gray-50 text-gray-800">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Markette %50 indirim başladı!
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endunless %}
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2"></div>
+
+    <script>
+      // Sticky Navbar
+      window.addEventListener('scroll', () => {
+        const nav = document.getElementById('site-navbar');
+        const credit = document.getElementById('nav-credit');
+        const cartBtn = document.getElementById('nav-cart-btn');
+        if (window.scrollY > 40) {
+          nav.classList.remove('bg-transparent', 'border-transparent', 'text-white', 'py-2');
+          nav.classList.add('bg-white', 'border-gray-200', 'shadow-sm', 'text-gray-900', 'backdrop-blur-none');
+          if (credit) {
+            credit.classList.remove('bg-primary/20', 'border-white/10');
+            credit.classList.add('bg-primary', 'border-transparent');
+          }
+          if (cartBtn) {
+            cartBtn.classList.remove('bg-white/10', 'hover:bg-white/20');
+            cartBtn.classList.add('bg-gray-100', 'hover:bg-gray-200');
+          }
+        } else {
+          nav.classList.add('bg-transparent', 'border-transparent', 'text-white');
+          nav.classList.remove('bg-white', 'border-gray-200', 'shadow-sm', 'text-gray-900', 'backdrop-blur-none');
+          if (credit) {
+            credit.classList.remove('bg-primary', 'border-transparent');
+            credit.classList.add('bg-primary/20', 'border-white/10');
+          }
+          if (cartBtn) {
+            cartBtn.classList.add('bg-white/10', 'hover:bg-white/20');
+            cartBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+          }
+        }
+      });
+
+      // Mobile Menu Toggle Logic
+      function toggleMobileMenu() {
+        const overlay = document.getElementById('mobile-menu-overlay');
+        const sidebar = document.getElementById('mobile-menu-sidebar');
+        const isClosed = sidebar.classList.contains('-translate-x-full');
+
+        if (isClosed) {
+          // Open menu
+          overlay.classList.remove('opacity-0', 'pointer-events-none');
+          overlay.classList.add('opacity-100');
+          sidebar.classList.remove('-translate-x-full');
+          document.body.style.overflow = 'hidden';
+        } else {
+          // Close menu
+          overlay.classList.remove('opacity-100');
+          overlay.classList.add('opacity-0', 'pointer-events-none');
+          sidebar.classList.add('-translate-x-full');
+          document.body.style.overflow = '';
+        }
+      }
+
+      // Toast Notification Logic
+      function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `px-6 py-3.5 rounded-full shadow-2xl text-sm font-bold text-white transform transition-all duration-300 translate-y-10 opacity-0 flex items-center gap-2 ${
+          type === 'success' ? 'bg-green-500' : 'bg-primary'
+        }`;
+
+        const icon =
+          type === 'success'
+            ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`
+            : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+
+        toast.innerHTML = icon + message;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-10', 'opacity-0');
+          toast.classList.add('translate-y-0', 'opacity-100');
+        });
+
+        setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('translate-y-10', 'opacity-0');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      function copyIp(ip) {
+        navigator.clipboard.writeText(ip);
+        showToast('Sunucu adresi başarıyla kopyalandı!', 'success');
+      }
+    </script>
+
+    <!-- MAIN CONTENT -->
+    <main id="MainContent" class="flex-grow w-full relative z-10 {% if template == 'auth' %}h-screen flex{% endif %}">
+      {{ content_for_layout }}
+    </main>
+
+    {% unless template == 'auth' %}
+      <!-- FOOTER -->
+      <footer class="mt-20 border-t border-gray-200 bg-white pt-16 pb-8 relative z-10">
+        <div class="container max-w-[1400px] mx-auto px-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <!-- About -->
+            <div class="md:col-span-2">
+              {% if settings.logo %}
+                <img src="{{ settings.logo }}" alt="{{ shop.name }}" class="h-12 mb-4 object-contain">
+              {% else %}
+                <div class="font-display font-black text-2xl text-gray-900 mb-4">{{ shop.name | upcase }}</div>
+              {% endif %}
+              <p class="text-gray-600 text-sm leading-relaxed mb-6 max-w-md">
+                {{
+                  settings.footer.about
+                  | default: "Türkiye'nin en gelişmiş Minecraft sunucu ağı. Bize katıl ve maceraya başla!"
+                }}
+              </p>
+            </div>
+
+            <!-- Links -->
+            <div>
+              <h3 class="font-bold text-gray-900 mb-4 uppercase tracking-widest text-sm">Hızlı Bağlantılar</h3>
+              <ul class="space-y-3">
+                {% if settings.footer.quick_links != blank %}
+                  {% for link in settings.footer.quick_links %}
+                    <li>
+                      <a
+                        href="{{ link.url }}"
+                        class="text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                      >
+                        {{- link.title -}}
+                      </a>
+                    </li>
+                  {% endfor %}
+                {% else %}
+                  <li>
+                    <a href="/" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                      >Ana Sayfa</a
+                    >
+                  </li>
+                  <li>
+                    <a href="/store" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                      >Mağaza</a
+                    >
+                  </li>
+                {% endif %}
+              </ul>
+            </div>
+
+            <!-- Social / Support -->
+            <div>
+              <h3 class="font-bold text-gray-900 mb-4 uppercase tracking-widest text-sm">İletişim & Destek</h3>
+              <ul class="space-y-3 mb-4">
+                {% if settings.footer.support_links != blank %}
+                  {% for link in settings.footer.support_links %}
+                    <li>
+                      <a
+                        href="{{ link.url }}"
+                        class="text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                      >
+                        {{- link.title -}}
+                      </a>
+                    </li>
+                  {% endfor %}
+                {% else %}
+                  <li>
+                    <a href="/kurallar" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                      >Sunucu Kuralları</a
+                    >
+                  </li>
+                  <li>
+                    <a href="/yardim" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                      >Yardım Merkezi</a
+                    >
+                  </li>
+                {% endif %}
+              </ul>
+
+              <div class="flex flex-col gap-3 pt-4 border-t border-gray-100 mt-4">
+                {% if settings.footer.contact_address != blank %}
+                  <div class="flex items-start gap-3 text-gray-600 text-sm font-medium">
+                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>{{ settings.footer.contact_address }}</span>
+                  </div>
+                {% endif %}
+                {% if settings.footer.contact_phone != blank %}
+                  <a
+                    href="tel:{{ settings.footer.contact_phone }}"
+                    class="flex items-center gap-3 text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                    {{ settings.footer.contact_phone }}
+                  </a>
+                {% endif %}
+                {% if settings.footer.contact_email != blank %}
+                  <a
+                    href="mailto:{{ settings.footer.contact_email }}"
+                    class="flex items-center gap-3 text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    {{ settings.footer.contact_email }}
+                  </a>
+                {% endif %}
+                {% if settings.discord_url != blank %}
+                  <a
+                    href="{{ settings.discord_url }}"
+                    target="_blank"
+                    class="flex items-center gap-3 text-gray-600 hover:text-[#5865F2] transition-colors text-sm font-medium"
+                  >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-2.8443-.4272-5.6887-.4272-8.4674 0-.1636-.3993-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
+                    </svg>
+                    Discord Topluluğumuz
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-xs text-gray-500 font-medium">
+              {{ settings.footer.copyright | default: '© 2024 Tüm hakları saklıdır.' }}
+            </p>
+            <p class="text-xs text-gray-500 font-medium">
+              Altyapı:
+              <a href="https://crafter.com.tr" target="_blank" class="text-primary hover:underline transition-all"
+                >Crafter CMS</a
+              >
+            </p>
+          </div>
+        </div>
+      </footer>
+    {% endunless %}
+
+    <!-- Global Scripts -->
+    <script>
+      // NProgress Page Load Handling
+      NProgress.configure({ showSpinner: false });
+      NProgress.done();
+      
+      async function logoutAccount() {
+        try {
+          await fetch('/api/storefront/v2/auth/logout', { method: 'POST' });
+          window.location.reload();
+        } catch (err) {
+          window.location.reload();
+        }
+      }
+      
+      document.addEventListener('click', e => {
+        const a = e.target.closest('a');
+        if (a && a.href && !a.href.startsWith('#') && !a.target && a.host === window.location.host) {
+          if (a.href !== window.location.href) NProgress.start();
+        }
+      });
+
+      // Discord Widget Data Fetcher
+      {% if settings.discord.guild_id != blank %}
+      fetch('https://discord.com/api/guilds/{{ settings.discord.guild_id }}/widget.json')
+        .then(res => res.json())
+        .then(data => {
+          if (data.presence_count !== undefined) {
+            document.querySelectorAll('.discord-live-count').forEach(el => {
+              const format = el.getAttribute('data-format') || '{count}';
+              el.textContent = format.replace('{count}', data.presence_count);
+            });
+          }
+          if (data.instant_invite) {
+            document.querySelectorAll('.discord-invite-link').forEach(el => {
+              el.href = data.instant_invite;
+            });
+          }
+        })
+        .catch(err => console.error('Discord API Hatası:', err));
+      {% endif %}
+
+      // MCAPI.TR Minecraft Server Status Fetcher
+      const serverIp = '{{ settings.server_ip | default: "play.minecraft.net" }}';
+      if (serverIp) {
+        fetch(`https://mcapi.tr/api/v1/status/${serverIp}`)
+          .then(res => res.json())
+          .then(data => {
+            const countEl = document.getElementById('server-player-count');
+            if (countEl) {
+              if (data.online && data.players) {
+                countEl.textContent = `${data.players.online} ÇEVRİMİÇİ`;
+              } else {
+                countEl.textContent = 'BAKIMDA VEYA KAPALI';
+              }
+            }
+          })
+          .catch(err => console.error('MCAPI.TR Hatası:', err));
+      }
+    </script>
+    <script>
+      function updateGlobalCartBadge() {
+        try {
+          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+          document.querySelectorAll('.header-cart-badge').forEach((el) => {
+            el.innerText = count;
+            if (count > 0) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+          });
+        } catch (e) {}
+      }
+
+      // Global Add to Cart function
+      window.addToCart = function (product, quantity = 1) {
+        try {
+          const productId = product.id || product._id;
+          if (!productId) return;
+
+          let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          const idx = cart.findIndex((i) => (i.id || i._id) === productId);
+          if (idx !== -1) {
+            cart[idx].quantity += quantity;
+          } else {
+            product.quantity = quantity;
+            product.id = productId; // ensure standard id field
+            cart.push(product);
+          }
+          localStorage.setItem('cart', JSON.stringify(cart));
+          updateGlobalCartBadge();
+          window.showToast?.('Ürün sepete eklendi!', 'success');
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      document.addEventListener('DOMContentLoaded', updateGlobalCartBadge);
+      // Listen for local storage changes across tabs
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'cart') updateGlobalCartBadge();
+      });
+    </script>
+
+    {% if settings.integrations.tawk_to_id != blank %}
+      <!--Start of Tawk.to Script-->
+      <script type="text/javascript">
+      var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+      (function(){
+      var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+      s1.async=true;
+      s1.src='https://embed.tawk.to/{{ settings.integrations.tawk_to_id }}';
+      s1.charset='UTF-8';
+      s1.setAttribute('crossorigin','*');
+      s0.parentNode.insertBefore(s1,s0);
+      })();
+      </script>
+      <!--End of Tawk.to Script-->
+    {% endif %}
+  </body>
+</html>
