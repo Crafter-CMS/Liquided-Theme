@@ -4,16 +4,43 @@
     "settings": [
       {
         "type": "image_picker",
-        "id": "logo",
-        "label": "Site Logosu",
-        "info": "Önerilen boyut: 400x160px (PNG şeffaf)"
+        "id": "logo_light",
+        "label": "Site Logosu (Karanlık Zeminler İçin)",
+        "info": "Hero alanı ve şeffaf menü gibi koyu renkli zeminlerde kullanılacak açık renkli logo.",
+        "default": "https://avatars.githubusercontent.com/u/3840546?s=280&v=4"
+      },
+      {
+        "type": "image_picker",
+        "id": "logo_dark",
+        "label": "Site Logosu (Aydınlık Zeminler İçin)",
+        "info": "Beyaz menü ve footer gibi açık renkli zeminlerde kullanılacak koyu renkli logo.",
+        "default": "https://avatars.githubusercontent.com/u/3840546?s=280&v=4"
+      },
+      {
+        "type": "number",
+        "id": "logo_width",
+        "label": "Menü Logo Genişliği (px)",
+        "default": 160
+      },
+      {
+        "type": "number",
+        "id": "hero_logo_width",
+        "label": "Hero Afiş Logo Genişliği (px)",
+        "default": 224
+      },
+      {
+        "type": "checkbox",
+        "id": "hero_logo_shake",
+        "label": "Hero Logosu Sallanma Efekti",
+        "default": true
       },
       {
         "type": "text",
         "id": "server_ip",
         "label": "Sunucu IP Adresi",
         "placeholder": "play.sunucu.com.tr",
-        "info": "Tıklanınca kopyalanacak olan ana sunucu adresi."
+        "info": "Tıklanınca kopyalanacak olan ana sunucu adresi.",
+        "default": "mc.hypixel.net"
       }
     ]
   },
@@ -31,6 +58,30 @@
         "id": "colors.background",
         "label": "Site Arkaplan Rengi",
         "default": "#f8f9fa"
+      },
+      {
+        "type": "color",
+        "id": "colors.surface",
+        "label": "Kart Zemin Rengi (Beyazlar)",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "colors.border",
+        "label": "Çizgi & Sınır Rengi",
+        "default": "#f3f4f6"
+      },
+      {
+        "type": "color",
+        "id": "colors.text_primary",
+        "label": "Ana Metin Rengi (Koyu Griler)",
+        "default": "#111827"
+      },
+      {
+        "type": "color",
+        "id": "colors.text_secondary",
+        "label": "İkincil Metin Rengi (Açık Griler)",
+        "default": "#6b7280"
       }
     ]
   },
@@ -140,13 +191,26 @@
         "id": "discord.guild_id",
         "label": "Discord Sunucu ID (Widget İçin)",
         "info": "Ana sayfa sağ sütunda çıkacak Discord Widget'ı için gerekli Sunucu ID.",
-        "placeholder": "Örn: 123456789012345678"
+        "placeholder": "Örn: 123456789012345678",
+        "default": "1256991995147190272"
       }
     ]
   },
   {
     "name": "Alt Kısım (Footer)",
     "settings": [
+      {
+        "type": "image_picker",
+        "id": "footer.logo",
+        "label": "Footer Logosu",
+        "info": "Footer alanında gösterilecek özel logo. Boş bırakılırsa aydınlık zemin logosu kullanılır."
+      },
+      {
+        "type": "number",
+        "id": "footer.logo_width",
+        "label": "Footer Logo Genişliği (px)",
+        "default": 192
+      },
       {
         "type": "textarea",
         "id": "footer.about",
@@ -206,7 +270,7 @@
         "type": "text",
         "id": "footer.copyright",
         "label": "Copyright (Telif Hakkı) Metni",
-        "default": "© 2024 Tüm hakları saklıdır."
+        "default": "© 2026 Tüm hakları saklıdır."
       }
     ]
   },

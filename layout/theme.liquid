@@ -13,6 +13,10 @@
       :root {
         --color-primary: {{ settings.colors.primary | default: '#0056b3' }};
         --color-bg: {{ settings.colors.background | default: '#f8f9fa' }};
+        --color-surface: {{ settings.colors.surface | default: '#ffffff' }};
+        --color-border: {{ settings.colors.border | default: '#f3f4f6' }};
+        --color-text-primary: {{ settings.colors.text_primary | default: '#111827' }};
+        --color-text-secondary: {{ settings.colors.text_secondary | default: '#6b7280' }};
       }
     </style>
     <script>
@@ -22,6 +26,19 @@
             colors: {
               primary: 'var(--color-primary)',
               base: 'var(--color-bg)',
+              white: 'var(--color-surface)',
+              gray: {
+                50: 'color-mix(in srgb, var(--color-surface) 96%, var(--color-text-primary) 4%)',
+                100: 'var(--color-border)',
+                200: 'color-mix(in srgb, var(--color-border) 90%, var(--color-text-primary) 10%)',
+                300: 'color-mix(in srgb, var(--color-border) 70%, var(--color-text-secondary) 30%)',
+                400: 'color-mix(in srgb, var(--color-text-secondary) 70%, var(--color-surface) 30%)',
+                500: 'var(--color-text-secondary)',
+                600: 'color-mix(in srgb, var(--color-text-secondary) 80%, var(--color-text-primary) 20%)',
+                700: 'color-mix(in srgb, var(--color-text-primary) 70%, var(--color-text-secondary) 30%)',
+                800: 'color-mix(in srgb, var(--color-text-primary) 90%, var(--color-text-secondary) 10%)',
+                900: 'var(--color-text-primary)',
+              }
             },
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
@@ -34,6 +51,9 @@
 
     <!-- Theme CSS -->
     <link rel="stylesheet" href="{{ 'assets/style.css' | asset_url }}">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- NProgress for smooth page transitions -->
     <link rel="stylesheet" href="https://unpkg.com/nprogress@0.2.0/nprogress.css">
@@ -90,14 +110,33 @@
           transform: translateX(-50%);
         }
       }
+
+      /* Float Animation */
+      @keyframes shake-logo {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) translateY(0);
+        }
+        50% {
+          transform: translate(-50%, -50%) translateY(-15px);
+        }
+      }
+      .animate-shake-logo {
+        animation: shake-logo 4s ease-in-out infinite;
+      }
     </style>
 
     {% if settings.integrations.google_analytics_id != blank %}
       <!-- Global site tag (gtag.js) - Google Analytics -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id={{ settings.integrations.google_analytics_id }}"></script>
+      <script
+        async
+        src="https://www.googletagmanager.com/gtag/js?id={{ settings.integrations.google_analytics_id }}"
+      ></script>
       <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() {
+          dataLayer.push(arguments);
+        }
         gtag('js', new Date());
         gtag('config', '{{ settings.integrations.google_analytics_id }}');
       </script>
@@ -121,71 +160,81 @@
 
           <!-- Logo (Left on Desktop, Center on Mobile) -->
           <a href="/" class="flex items-center gap-3 hover:scale-105 transition-transform duration-300 hidden md:flex">
-            {% if settings.logo %}
-              <img
-                src="{{ settings.logo }}"
-                alt="{{ shop.name }}"
-                class="h-10 object-contain drop-shadow-md"
-              >
-            {% else %}
-              <span class="font-display font-black text-xl tracking-wider drop-shadow-md">
-                {{- shop.name | upcase -}}
-              </span>
-            {% endif %}
+            {% assign default_logo = 'https://avatars.githubusercontent.com/u/3840546?s=280&v=4' %}
+            <img
+              src="{{ settings.logo_light | default: default_logo }}"
+              alt="{{ shop.name }}"
+              class="object-contain drop-shadow-md nav-logo-light"
+              style="width: {{ settings.logo_width | default: 160 }}px; max-height: 50px;"
+            >
+            <img
+              src="{{ settings.logo_dark | default: default_logo }}"
+              alt="{{ shop.name }}"
+              class="object-contain drop-shadow-md nav-logo-dark hidden"
+              style="width: {{ settings.logo_width | default: 160 }}px; max-height: 50px;"
+            >
           </a>
 
           <!-- Center: Navigation Links -->
           <nav class="hidden md:flex items-center gap-8 h-full">
             {% if settings.nav_links != blank %}
               {% for link in settings.nav_links %}
+                {% assign is_active = false %}
+                {% if link.url == '/' %}
+                  {% if request.path == '/' or request.path == blank %}
+                    {% assign is_active = true %}
+                  {% endif %}
+                {% elsif request.path contains link.url %}
+                  {% assign is_active = true %}
+                {% endif %}
                 <a
                   href="{{ link.url }}"
-                  class="h-full flex items-center text-[15px] font-bold transition-all relative group {% if request.path == link.url %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
+                  class="h-full flex items-center text-[15px] font-bold transition-all relative group {% if is_active %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
                   {% if link.new_tab %}
                     target="_blank"
                   {% endif %}
                 >
                   {{ link.title }}
                   <span
-                    class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left {% if request.path == link.url %}scale-x-100{% endif %}"
+                    class="absolute bottom-0 left-0 w-full h-[3px] bg-primary transition-transform origin-left {% if is_active %}scale-x-100{% else %}scale-x-0 group-hover:scale-x-100{% endif %}"
                   ></span>
                 </a>
               {% endfor %}
             {% else %}
               <a
                 href="/"
-                class="h-full flex items-center text-[15px] font-bold transition-all relative group opacity-100"
+                class="h-full flex items-center text-[15px] font-bold transition-all relative group {% if request.path == '/' or request.path == blank %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
               >
                 Anasayfa
                 <span
-                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-100 transition-transform origin-left"
+                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary transition-transform origin-left {% if request.path == '/' or request.path == blank %}scale-x-100{% else %}scale-x-0 group-hover:scale-x-100{% endif %}"
                 ></span>
               </a>
               <a
                 href="/store"
-                class="h-full flex items-center text-[15px] font-bold transition-all relative group opacity-80 hover:opacity-100"
+                class="h-full flex items-center text-[15px] font-bold transition-all relative group {% if request.path contains '/store' %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
               >
                 Mağaza
                 <span
-                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
+                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary transition-transform origin-left {% if request.path contains '/store' %}scale-x-100{% else %}scale-x-0 group-hover:scale-x-100{% endif %}"
                 ></span>
               </a>
               <a
                 href="/forum"
-                class="h-full flex items-center text-[15px] font-bold transition-all relative group opacity-80 hover:opacity-100"
+                class="h-full flex items-center text-[15px] font-bold transition-all relative group {% if request.path contains '/forum' %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
               >
                 Forum
                 <span
-                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
+                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary transition-transform origin-left {% if request.path contains '/forum' %}scale-x-100{% else %}scale-x-0 group-hover:scale-x-100{% endif %}"
                 ></span>
               </a>
               <a
-                href="/yardim"
-                class="h-full flex items-center text-[15px] font-bold transition-all relative group opacity-80 hover:opacity-100"
+                href="/help"
+                class="h-full flex items-center text-[15px] font-bold transition-all relative group {% if request.path contains '/yardim' %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
               >
                 Yardım
                 <span
-                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
+                  class="absolute bottom-0 left-0 w-full h-[3px] bg-primary transition-transform origin-left {% if request.path contains '/yardim' %}scale-x-100{% else %}scale-x-0 group-hover:scale-x-100{% endif %}"
                 ></span>
               </a>
             {% endif %}
@@ -308,7 +357,7 @@
 
                     {% if customer.role.permissions and customer.role.permissions.size > 0 %}
                       <a
-                        href="/admin"
+                        href="https://app.crafter.net.tr/cms/auth?websiteId={{ customer.websiteId }}&accessToken={{ customer.access_token }}&refreshToken={{ customer.refresh_token }}"
                         class="col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors text-center border border-purple-100"
                       >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -381,11 +430,13 @@
       >
         <!-- Sidebar Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-100">
-          {% if settings.logo %}
-            <img src="{{ settings.logo }}" alt="{{ shop.name }}" class="h-8 object-contain">
-          {% else %}
-            <span class="font-display font-black text-2xl text-gray-900">{{ shop.name | upcase }}</span>
-          {% endif %}
+          {% assign default_logo = 'https://avatars.githubusercontent.com/u/3840546?s=280&v=4' %}
+          <img
+            src="{{ settings.logo_dark | default: default_logo }}"
+            alt="{{ shop.name }}"
+            class="object-contain"
+            style="width: {{ settings.logo_width | default: 160 }}px; max-width: 140px; height: auto;"
+          >
           <button
             onclick="toggleMobileMenu()"
             class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-all"
@@ -400,9 +451,17 @@
         <div class="flex flex-col p-4 text-lg font-bold text-gray-600 overflow-y-auto flex-grow gap-1">
           {% if settings.nav_links != blank %}
             {% for link in settings.nav_links %}
+              {% assign is_active = false %}
+              {% if link.url == '/' %}
+                {% if request.path == '/' or request.path == blank %}
+                  {% assign is_active = true %}
+                {% endif %}
+              {% elsif request.path contains link.url %}
+                {% assign is_active = true %}
+              {% endif %}
               <a
                 href="{{ link.url }}"
-                class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all {% if request.path == link.url %}text-primary bg-primary/5{% endif %}"
+                class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all {% if is_active %}text-primary bg-primary/5{% endif %}"
               >
                 <span>{{ link.title }}</span>
                 <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -413,7 +472,7 @@
           {% else %}
             <a
               href="/"
-              class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-primary bg-primary/5 transition-all"
+              class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all {% if request.path == '/' or request.path == blank %}text-primary bg-primary/5{% endif %}"
             >
               <span>Ana Sayfa</span>
               <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -422,7 +481,7 @@
             </a>
             <a
               href="/store"
-              class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all"
+              class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all {% if request.path contains '/store' %}text-primary bg-primary/5{% endif %}"
             >
               <span>Mağaza</span>
               <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -431,7 +490,7 @@
             </a>
             <a
               href="/forum"
-              class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all"
+              class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all {% if request.path contains '/forum' %}text-primary bg-primary/5{% endif %}"
             >
               <span>Forum</span>
               <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -494,13 +553,11 @@
           <!-- Left: Server IP & Players -->
           <div class="hidden md:flex flex-col items-start">
             <button
-              onclick="copyIp('{{ settings.server_ip | default: 'play.minecraft.net' }}')"
+              onclick="copyIp('{{ settings.server_ip | default: 'mc.hypixel.net' }}')"
               class="flex items-center gap-4 hover:-translate-y-1 transition-all group"
             >
               <div class="w-16 h-16 bg-primary rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.3)] shadow-primary/40 flex items-center justify-center text-white border border-white/20 transition-transform group-hover:scale-105">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+                <i class="fa-solid fa-play text-2xl"></i>
               </div>
               <div class="text-left drop-shadow-md">
                 <div
@@ -511,25 +568,21 @@
                   Çevrimiçi
                 </div>
                 <div class="text-[17px] font-black text-white tracking-widest mt-1 group-hover:text-primary transition-colors">
-                  {{ settings.server_ip | default: 'PLAY.SUNUCU.NET' }}
+                  {{ settings.server_ip | default: 'mc.hypixel.net' }}
                 </div>
               </div>
             </button>
           </div>
 
           <!-- Center: Logo -->
-          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 mt-4">
-            {% if settings.logo %}
-              <img
-                src="{{ settings.logo }}"
-                alt="{{ shop.name }}"
-                class="w-40 h-40 md:w-56 md:h-56 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-              >
-            {% else %}
-              <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] flex items-center justify-center font-display font-black text-3xl text-white border-4 border-white/20 backdrop-blur-md">
-                {{ shop.name | upcase }}
-              </div>
-            {% endif %}
+          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 mt-4 {% if settings.hero_logo_shake %}animate-shake-logo{% endif %}">
+            {% assign default_logo = 'https://avatars.githubusercontent.com/u/3840546?s=280&v=4' %}
+            <img
+              src="{{ settings.logo_light | default: default_logo }}"
+              alt="{{ shop.name }}"
+              class="object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+              style="width: {{ settings.hero_logo_width | default: 224 }}px; max-width: 90vw; height: auto;"
+            >
           </div>
 
           <!-- Right: Discord -->
@@ -551,9 +604,7 @@
                 </div>
               </div>
               <div class="w-16 h-16 bg-[#5865F2] rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.3)] shadow-[#5865F2]/40 flex items-center justify-center text-white border border-white/20 transition-transform group-hover:scale-105">
-                <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-2.8443-.4272-5.6887-.4272-8.4674 0-.1636-.3993-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
-                </svg>
+                <i class="fa-brands fa-discord text-4xl"></i>
               </div>
             </a>
           </div>
@@ -561,11 +612,11 @@
       </div>
 
       <!-- PROMO BAR (Under Hero) -->
-      <div class="w-full bg-white border-b border-gray-100 shadow-sm relative z-20 overflow-hidden flex text-sm font-bold py-3">
-        <div class="flex whitespace-nowrap animate-[marquee_40s_linear_infinite] hover:[animation-play-state:paused] items-center">
-          {% assign loop_count = '1,2,3,4,5,6,7,8' | split: ',' %}
-          {% for i in loop_count %}
-            {% if settings.header.promo_texts != blank and settings.header.promo_texts.size > 0 %}
+      {% if settings.header.promo_texts != blank and settings.header.promo_texts.size > 0 %}
+        <div class="w-full bg-white border-b border-gray-100 shadow-sm relative z-20 overflow-hidden flex text-sm font-bold py-3">
+          <div class="flex whitespace-nowrap animate-[marquee_40s_linear_infinite] hover:[animation-play-state:paused] items-center">
+            {% assign loop_count = '1,2,3,4,5,6,7,8' | split: ',' %}
+            {% for i in loop_count %}
               {% for promo in settings.header.promo_texts %}
                 <div
                   class="inline-flex items-center gap-2 px-8 py-2 mx-4 rounded-xl shadow-sm border border-black/5"
@@ -581,18 +632,10 @@
                   {{ promo.text }}
                 </div>
               {% endfor %}
-            {% else %}
-              <div class="inline-flex items-center gap-2 px-8 py-2 mx-4 rounded-xl shadow-sm border border-gray-100 bg-white text-gray-800">
-                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> 10TL üzeri yüklemelerde %50 Bonus
-                Kredi!
-              </div>
-              <div class="inline-flex items-center gap-2 px-8 py-2 mx-4 rounded-xl shadow-sm border border-gray-100 bg-gray-50 text-gray-800">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Markette %50 indirim başladı!
-              </div>
-            {% endif %}
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
-      </div>
+      {% endif %}
     {% endunless %}
 
     <!-- Toast Notification Container -->
@@ -604,9 +647,14 @@
         const nav = document.getElementById('site-navbar');
         const credit = document.getElementById('nav-credit');
         const cartBtn = document.getElementById('nav-cart-btn');
+        const logoLight = document.querySelector('.nav-logo-light');
+        const logoDark = document.querySelector('.nav-logo-dark');
+
         if (window.scrollY > 40) {
           nav.classList.remove('bg-transparent', 'border-transparent', 'text-white', 'py-2');
           nav.classList.add('bg-white', 'border-gray-200', 'shadow-sm', 'text-gray-900', 'backdrop-blur-none');
+          if (logoLight) logoLight.classList.add('hidden');
+          if (logoDark) logoDark.classList.remove('hidden');
           if (credit) {
             credit.classList.remove('bg-primary/20', 'border-white/10');
             credit.classList.add('bg-primary', 'border-transparent');
@@ -618,6 +666,8 @@
         } else {
           nav.classList.add('bg-transparent', 'border-transparent', 'text-white');
           nav.classList.remove('bg-white', 'border-gray-200', 'shadow-sm', 'text-gray-900', 'backdrop-blur-none');
+          if (logoLight) logoLight.classList.remove('hidden');
+          if (logoDark) logoDark.classList.add('hidden');
           if (credit) {
             credit.classList.remove('bg-primary', 'border-transparent');
             credit.classList.add('bg-primary/20', 'border-white/10');
@@ -696,17 +746,74 @@
           <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <!-- About -->
             <div class="md:col-span-2">
-              {% if settings.logo %}
-                <img src="{{ settings.logo }}" alt="{{ shop.name }}" class="h-12 mb-4 object-contain">
-              {% else %}
-                <div class="font-display font-black text-2xl text-gray-900 mb-4">{{ shop.name | upcase }}</div>
-              {% endif %}
+              {% assign default_logo = 'https://avatars.githubusercontent.com/u/3840546?s=280&v=4' %}
+              {% assign footer_logo = settings.footer.logo | default: settings.logo_dark | default: default_logo %}
+              <img
+                src="{{ footer_logo }}"
+                alt="{{ shop.name }}"
+                class="mb-4 object-contain"
+                style="width: {{ settings.footer.logo_width | default: 192 }}px; max-width: 100%; height: auto;"
+              >
               <p class="text-gray-600 text-sm leading-relaxed mb-6 max-w-md">
                 {{
                   settings.footer.about
                   | default: "Türkiye'nin en gelişmiş Minecraft sunucu ağı. Bize katıl ve maceraya başla!"
                 }}
               </p>
+
+              <!-- Social Media Boxes -->
+              <div class="flex flex-wrap gap-2">
+                {% if settings.discord_url != blank %}
+                  <a
+                    href="{{ settings.discord_url }}"
+                    target="_blank"
+                    class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-[#5865F2] hover:text-white transition-all shadow-sm border border-gray-100"
+                    title="Discord"
+                  >
+                    <i class="fa-brands fa-discord text-xl"></i>
+                  </a>
+                {% endif %}
+                {% if settings.instagram_url != blank %}
+                  <a
+                    href="{{ settings.instagram_url }}"
+                    target="_blank"
+                    class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-[#E1306C] hover:text-white transition-all shadow-sm border border-gray-100"
+                    title="Instagram"
+                  >
+                    <i class="fa-brands fa-instagram text-xl"></i>
+                  </a>
+                {% endif %}
+                {% if settings.tiktok_url != blank %}
+                  <a
+                    href="{{ settings.tiktok_url }}"
+                    target="_blank"
+                    class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-black hover:text-white transition-all shadow-sm border border-gray-100"
+                    title="TikTok"
+                  >
+                    <i class="fa-brands fa-tiktok text-xl"></i>
+                  </a>
+                {% endif %}
+                {% if settings.youtube_url != blank %}
+                  <a
+                    href="{{ settings.youtube_url }}"
+                    target="_blank"
+                    class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-[#FF0000] hover:text-white transition-all shadow-sm border border-gray-100"
+                    title="YouTube"
+                  >
+                    <i class="fa-brands fa-youtube text-xl"></i>
+                  </a>
+                {% endif %}
+                {% if settings.forum_url != blank %}
+                  <a
+                    href="{{ settings.forum_url }}"
+                    target="_blank"
+                    class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white transition-all shadow-sm border border-gray-100"
+                    title="Forum"
+                  >
+                    <i class="fa-solid fa-comments text-xl"></i>
+                  </a>
+                {% endif %}
+              </div>
             </div>
 
             <!-- Links -->
@@ -799,29 +906,17 @@
                     {{ settings.footer.contact_email }}
                   </a>
                 {% endif %}
-                {% if settings.discord_url != blank %}
-                  <a
-                    href="{{ settings.discord_url }}"
-                    target="_blank"
-                    class="flex items-center gap-3 text-gray-600 hover:text-[#5865F2] transition-colors text-sm font-medium"
-                  >
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-2.8443-.4272-5.6887-.4272-8.4674 0-.1636-.3993-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
-                    </svg>
-                    Discord Topluluğumuz
-                  </a>
-                {% endif %}
               </div>
             </div>
           </div>
 
           <div class="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
             <p class="text-xs text-gray-500 font-medium">
-              {{ settings.footer.copyright | default: '© 2024 Tüm hakları saklıdır.' }}
+              {{ settings.footer.copyright | default: '© 2026 Tüm hakları saklıdır.' }}
             </p>
             <p class="text-xs text-gray-500 font-medium">
               Altyapı:
-              <a href="https://crafter.com.tr" target="_blank" class="text-primary hover:underline transition-all"
+              <a href="https://crafter.net.tr" target="_blank" class="text-primary hover:underline transition-all"
                 >Crafter CMS</a
               >
             </p>
@@ -854,7 +949,7 @@
 
       // Discord Widget Data Fetcher
       {% if settings.discord.guild_id != blank %}
-      fetch('https://discord.com/api/guilds/{{ settings.discord.guild_id }}/widget.json')
+      fetch('https://discord.com/api/guilds/{{ settings.discord.guild_id | default: '1256991995147190272' }}/widget.json')
         .then(res => res.json())
         .then(data => {
           if (data.presence_count !== undefined) {
@@ -873,7 +968,7 @@
       {% endif %}
 
       // MCAPI.TR Minecraft Server Status Fetcher
-      const serverIp = '{{ settings.server_ip | default: "play.minecraft.net" }}';
+      const serverIp = '{{ settings.server_ip | default: "mc.hypixel.net" }}';
       if (serverIp) {
         fetch(`https://mcapi.tr/api/v1/status/${serverIp}`)
           .then(res => res.json())
@@ -934,19 +1029,21 @@
     </script>
 
     {% if settings.integrations.tawk_to_id != blank %}
-      <!--Start of Tawk.to Script-->
+      <!-- Start of Tawk.to Script -->
       <script type="text/javascript">
-      var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-      (function(){
-      var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-      s1.async=true;
-      s1.src='https://embed.tawk.to/{{ settings.integrations.tawk_to_id }}';
-      s1.charset='UTF-8';
-      s1.setAttribute('crossorigin','*');
-      s0.parentNode.insertBefore(s1,s0);
-      })();
+        var Tawk_API = Tawk_API || {},
+          Tawk_LoadStart = new Date();
+        (function () {
+          var s1 = document.createElement('script'),
+            s0 = document.getElementsByTagName('script')[0];
+          s1.async = true;
+          s1.src = 'https://embed.tawk.to/{{ settings.integrations.tawk_to_id }}';
+          s1.charset = 'UTF-8';
+          s1.setAttribute('crossorigin', '*');
+          s0.parentNode.insertBefore(s1, s0);
+        })();
       </script>
-      <!--End of Tawk.to Script-->
+      <!-- End of Tawk.to Script -->
     {% endif %}
   </body>
 </html>

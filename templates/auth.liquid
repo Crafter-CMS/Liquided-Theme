@@ -125,6 +125,18 @@
             <input
               type="password"
               name="password"
+              id="registerPassword"
+              required
+              placeholder="••••••••"
+              class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Şifre (Tekrar)</label>
+            <input
+              type="password"
+              name="confirm_password"
+              id="registerConfirmPassword"
               required
               placeholder="••••••••"
               class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -273,6 +285,11 @@
     if (data['cf-turnstile-response']) {
       data.turnstileToken = data['cf-turnstile-response'];
       delete data['cf-turnstile-response'];
+    }
+
+    if (data.password !== data.confirm_password) {
+      showToast('Şifreler eşleşmiyor!', 'error');
+      return;
     }
 
     const btn = e.target.querySelector('button');
