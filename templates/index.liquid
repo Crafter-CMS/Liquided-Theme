@@ -282,7 +282,13 @@
               href="/store/{{ product.serverSlug }}/{{ product.categorySlug }}/{{ product.slug }}"
               class="w-full aspect-square bg-gray-50 rounded-2xl mb-4 flex items-center justify-center border border-gray-100 overflow-hidden relative block"
             >
-              {% if product.image != blank %}
+              {% if product.images and product.images.size > 0 %}
+                <img
+                  src="{{ product.images[0] }}"
+                  alt="{{ product.name }}"
+                  class="w-3/4 h-3/4 object-contain filter drop-shadow-xl group-hover:scale-110 transition-transform duration-500"
+                >
+              {% elsif product.image != blank %}
                 <img
                   src="{{ product.image }}"
                   alt="{{ product.name }}"

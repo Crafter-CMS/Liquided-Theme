@@ -58,7 +58,9 @@
                     href="/store/{{ server.slug }}/{{ category.slug }}/{{ product.slug }}"
                     class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center p-2 border border-gray-100 mb-2 group-hover:border-primary transition-colors"
                   >
-                    {% if product.image %}
+                    {% if product.images and product.images.size > 0 %}
+                      <img src="{{ product.images[0] }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                    {% elsif product.image %}
                       <img src="{{ product.image }}" alt="{{ product.name }}" class="w-full h-full object-contain">
                     {% else %}
                       <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,7 +74,7 @@
                       {{ product.name }}
                     </h3>
                   </a>
-                  <p class="text-xs text-gray-500 leading-relaxed line-clamp-3 mb-2">{{ product.description }}</p>
+                  <p class="text-xs text-gray-500 leading-relaxed line-clamp-3 mb-2">{{ product.description | lexical_text | truncate: 150 }}</p>
 
                   <div class="mt-auto mb-2 flex flex-col items-center justify-center gap-2">
                     {% if product.stock <= 0 %}
@@ -241,7 +243,13 @@
               href="/store/{{ server.slug }}/{{ category.slug }}/{{ product.slug }}"
               class="w-full aspect-square bg-gray-50 rounded-2xl mb-4 flex items-center justify-center border border-gray-100 overflow-hidden relative block"
             >
-              {% if product.image != blank %}
+              {% if product.images and product.images.size > 0 %}
+                <img
+                  src="{{ product.images[0] }}"
+                  class="w-3/4 h-3/4 object-contain group-hover:scale-110 transition-transform duration-500"
+                  alt="{{ product.name }}"
+                >
+              {% elsif product.image != blank %}
                 <img
                   src="{{ product.image }}"
                   class="w-3/4 h-3/4 object-contain group-hover:scale-110 transition-transform duration-500"
