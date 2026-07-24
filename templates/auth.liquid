@@ -39,7 +39,7 @@
 
         <form id="loginForm" class="space-y-5">
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı Adı veya E-posta</label>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı Adı</label>
             <input
               type="text"
               name="username"
@@ -51,7 +51,9 @@
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="block text-sm font-bold text-gray-700">Şifre</label>
-              <a href="/auth/password/forgot" class="text-xs font-bold text-primary hover:underline">Şifremi Unuttum?</a>
+              <a href="/auth/password/forgot" class="text-xs font-bold text-primary hover:underline"
+                >Şifremi Unuttum?</a
+              >
             </div>
             <input
               type="password"
@@ -220,7 +222,7 @@
     return null;
   }
 
-  fetchAuthServerStatus().then(online => {
+  fetchAuthServerStatus().then((online) => {
     const el = document.getElementById('auth-online-count');
     if (el) {
       el.classList.remove('animate-pulse');
@@ -250,7 +252,7 @@
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
+
     if (data['cf-turnstile-response']) {
       data.turnstileToken = data['cf-turnstile-response'];
       delete data['cf-turnstile-response'];
