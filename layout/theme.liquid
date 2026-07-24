@@ -970,19 +970,41 @@
       // MCAPI.TR Minecraft Server Status Fetcher
       const serverIp = '{{ settings.server_ip | default: "mc.hypixel.net" }}';
       if (serverIp) {
-        fetch(`https://mcapi.tr/api/v1/status/${serverIp}`)
-          .then(res => res.json())
-          .then(data => {
-            const countEl = document.getElementById('server-player-count');
-            if (countEl) {
-              if (data.online && data.players) {
-                countEl.textContent = `${data.players.online} ÇEVRİMİÇİ`;
-              } else {
-                countEl.textContent = 'BAKIMDA VEYA KAPALI';
-              }
+        const countEl = document.getElementById('server-player-count');
+        
+        async function fetchServerStatus() {
+          try {
+            const res = await fetch(`https://mcapi.tr/api/v1/status/${serverIp}`);
+            if (!res.ok) throw new Error('MCAPI.TR error');
+            const data = await res.json();
+            if (data.online && data.players) {
+              return data.players.online;
             }
-          })
-          .catch(err => console.error('MCAPI.TR Hatası:', err));
+          } catch (e) {
+            console.warn('MCAPI.TR failed, trying fallback...', e);
+            try {
+              const res2 = await fetch(`https://api.mcsrvstat.us/3/${serverIp}`);
+              if (!res2.ok) throw new Error('Fallback API error');
+              const data2 = await res2.json();
+              if (data2.online && data2.players) {
+                return data2.players.online;
+              }
+            } catch (e2) {
+              console.error('All APIs failed', e2);
+            }
+          }
+          return null;
+        }
+
+        fetchServerStatus().then(online => {
+          if (countEl) {
+            if (online !== null) {
+              countEl.textContent = `${online} ÇEVRİMİÇİ`;
+            } else {
+              countEl.textContent = 'BAKIMDA VEYA KAPALI';
+            }
+          }
+        });
       }
     </script>
     <script>

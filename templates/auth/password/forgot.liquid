@@ -101,22 +101,30 @@
 <script>
   // Dynamic Online Players
   const serverIp = '{{ settings.server_ip | default: "play.crafter.com.tr" }}';
-  fetch(`https://mcapi.tr/api/v1/status/${serverIp}`)
-    .then((r) => r.json())
-    .then((data) => {
-      const el = document.getElementById('auth-online-count');
-      if (el) {
-        el.classList.remove('animate-pulse');
-        el.innerText = data.players ? data.players.online : 0;
-      }
-    })
-    .catch(() => {
-      const el = document.getElementById('auth-online-count');
-      if (el) {
-        el.classList.remove('animate-pulse');
-        el.innerText = '?';
-      }
-    });
+  async function fetchAuthServerStatus() {
+    try {
+      const res = await fetch(`https://mcapi.tr/api/v1/status/${serverIp}`);
+      if (!res.ok) throw new Error('Primary API error');
+      const data = await res.json();
+      if (data.online && data.players) return data.players.online;
+    } catch (e) {
+      try {
+        const res2 = await fetch(`https://api.mcsrvstat.us/3/${serverIp}`);
+        if (!res2.ok) throw new Error('Fallback API error');
+        const data2 = await res2.json();
+        if (data2.online && data2.players) return data2.players.online;
+      } catch (e2) {}
+    }
+    return null;
+  }
+
+  fetchAuthServerStatus().then(online => {
+    const el = document.getElementById('auth-online-count');
+    if (el) {
+      el.classList.remove('animate-pulse');
+      el.innerText = online !== null ? online : '?';
+    }
+  });
 
   // Handle Forgot Password
   document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
