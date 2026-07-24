@@ -144,7 +144,7 @@
   </head>
 
   <body class="bg-base text-gray-900 flex flex-col min-h-screen antialiased selection:bg-primary selection:text-white">
-    {% unless template == 'auth' %}
+    {% unless template == 'auth' or template contains 'auth/' %}
       <!-- NAVBAR SECTION (Fixed & Transparent -> Solid White) -->
       <header
         id="site-navbar"
@@ -735,11 +735,11 @@
     </script>
 
     <!-- MAIN CONTENT -->
-    <main id="MainContent" class="flex-grow w-full relative z-10 {% if template == 'auth' %}h-screen flex{% endif %}">
+    <main id="MainContent" class="flex-grow w-full relative z-10 {% if template == 'auth' or template contains 'auth/' %}h-screen flex{% endif %}">
       {{ content_for_layout }}
     </main>
 
-    {% unless template == 'auth' %}
+    {% unless template == 'auth' or template contains 'auth/' %}
       <!-- FOOTER -->
       <footer class="mt-20 border-t border-gray-200 bg-white pt-16 pb-8 relative z-10">
         <div class="container max-w-[1400px] mx-auto px-4">
