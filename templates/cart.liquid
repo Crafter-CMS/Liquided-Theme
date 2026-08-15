@@ -428,10 +428,10 @@
 
     try {
       const res = await fetch(`/api/storefront/v1/coupons/${code}`);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       
-      if (data && data.success && data.data) {
-        const c = data.data;
+      const c = data.data || (data.code || data.id ? data : null);
+      if (res.ok && c && data.success !== false) {
         if (!c.isActive) {
           window.showToast?.('Kupon artık aktif değil.', 'error');
           return;

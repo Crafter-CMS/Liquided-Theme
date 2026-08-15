@@ -3,8 +3,6 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page_title | default: shop.name }}</title>
-    <meta name="description" content="{{ page_description | default: shop.name | append: ' - Minecraft Mağazası' }}">
     {{ content_for_header }}
 
     <!-- Tailwind CSS -->
@@ -144,7 +142,7 @@
   </head>
 
   <body class="bg-base text-gray-900 flex flex-col min-h-screen antialiased selection:bg-primary selection:text-white">
-    {% unless template == 'auth' or template contains 'auth/' %}
+    {% unless template == 'auth' or template contains 'auth/' or template == 'errors/maintenance' %}
       <!-- NAVBAR SECTION (Fixed & Transparent -> Solid White) -->
       <header
         id="site-navbar"
@@ -735,11 +733,11 @@
     </script>
 
     <!-- MAIN CONTENT -->
-    <main id="MainContent" class="flex-grow w-full relative z-10 {% if template == 'auth' or template contains 'auth/' %}h-screen flex{% endif %}">
+    <main id="MainContent" class="flex-grow w-full relative z-10 {% if template == 'auth' or template contains 'auth/' %}h-screen flex{% elsif template == 'errors/maintenance' %}flex items-center justify-center min-h-screen{% endif %}">
       {{ content_for_layout }}
     </main>
 
-    {% unless template == 'auth' or template contains 'auth/' %}
+    {% unless template == 'auth' or template contains 'auth/' or template == 'errors/maintenance' %}
       <!-- FOOTER -->
       <footer class="mt-20 border-t border-gray-200 bg-white pt-16 pb-8 relative z-10">
         <div class="container max-w-[1400px] mx-auto px-4">

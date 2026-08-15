@@ -89,7 +89,7 @@
                 >
                   <option value="" disabled selected>Lütfen bir kategori seçin</option>
                   {% for cat in forumCategories %}
-                    <option value="{{ cat.slug | default: cat.id }}" {% if request.searchParams.category == cat.slug or request.searchParams.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                    <option value="{{ cat.id }}" data-slug="{{ cat.slug | default: cat.id }}" {% if request.searchParams.category == cat.slug or request.searchParams.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
                   {% endfor %}
                 </select>
                 <svg
@@ -307,6 +307,9 @@
 
         const formData = new FormData(e.target);
         const categoryId = formData.get('categoryId');
+        const selectEl = e.target.querySelector('select[name="categoryId"]');
+        const selectedOption = selectEl ? selectEl.options[selectEl.selectedIndex] : null;
+        const categorySlug = selectedOption?.dataset?.slug || categoryId;
 
         const data = {
           title: formData.get('title'),
@@ -325,10 +328,11 @@
             window.showToast?.('Konu başarıyla oluşturuldu!', 'success');
             // Backendden dönen topic datasında ID veya slug olması muhtemel:
             const topicUrlId = result.id || result.slug || '';
+            const redirectCategory = result.category?.slug || categorySlug;
             if (topicUrlId) {
-              window.location.href = `/forum/${categoryId}/${topicUrlId}`;
+              window.location.href = `/forum/${redirectCategory}/${topicUrlId}`;
             } else {
-              window.location.href = `/forum/${categoryId}`;
+              window.location.href = `/forum/${redirectCategory}`;
             }
           } else {
             window.showToast?.(result.message || 'Bir hata oluştu.', 'error');
