@@ -172,6 +172,8 @@
       delete data['cf-turnstile-response'];
     }
 
+    data.password = data.new_password;
+
     const btn = e.target.querySelector('button');
     const originalText = btn.innerHTML;
 
