@@ -1,13 +1,14 @@
 {% if websiteData.security.cf_turnstile.site_key %}
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 {% endif %}
-<div class="flex w-full h-screen bg-white overflow-hidden">
-  <!-- LEFT SIDE: Auth Form -->
-  <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 lg:p-24 relative">
+
+<div class="flex w-full min-h-screen bg-white overflow-hidden">
+  <!-- LEFT SIDE: Auth Forms -->
+  <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-10 lg:p-16 relative overflow-y-auto max-h-screen">
     <!-- Back to Home -->
     <a
       href="/"
-      class="absolute top-8 left-8 flex items-center gap-2 text-gray-500 hover:text-primary transition-colors font-bold text-sm"
+      class="absolute top-6 left-6 flex items-center gap-2 text-gray-500 hover:text-primary transition-colors font-bold text-sm z-10"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -15,51 +16,62 @@
       Ana Sayfaya Dön
     </a>
 
-    <div class="w-full max-w-md mx-auto">
+    <div class="w-full max-w-md mx-auto py-8">
       <!-- Logo -->
-      <a href="/" class="block mb-8">
+      <a href="/" class="block mb-6 text-center sm:text-left">
         {% if settings.logo %}
-          <img src="{{ settings.logo }}" alt="{{ shop.name }}" class="h-16 object-contain">
+          <img src="{{ settings.logo }}" alt="{{ shop.name }}" class="h-14 object-contain mx-auto sm:mx-0">
         {% else %}
           <div class="font-display font-black text-3xl text-gray-900">{{ shop.name | upcase }}</div>
         {% endif %}
       </a>
 
-      <!-- State Containers -->
+      <!-- Discord / URL Alert Banner -->
+      <div id="auth-alert-banner" class="hidden mb-6 p-4 rounded-2xl border text-sm font-medium animate-[fade-in_300ms_ease-out] flex items-start gap-3">
+        <div id="auth-alert-icon" class="w-5 h-5 shrink-0 mt-0.5"></div>
+        <div class="flex-grow">
+          <div id="auth-alert-title" class="font-bold"></div>
+          <div id="auth-alert-desc" class="text-xs mt-0.5 opacity-90"></div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- 1. LOGIN CONTAINER -->
+      <!-- ========================================== -->
       <div
         id="login-container"
-        class="{% if request.path contains 'sign-up' %}hidden{% endif %} animate-[fade-in_300ms_ease-out]"
+        class="{% if request.path contains 'sign-up' %}hidden{% endif %} auth-step animate-[fade-in_300ms_ease-out]"
       >
         <h1 class="text-3xl font-black text-gray-900 mb-2 tracking-tight">
           {{ settings.auth.login_title | default: 'Tekrar Hoş Geldin!' }}
         </h1>
-        <p class="text-gray-500 font-medium mb-8">
+        <p class="text-gray-500 font-medium mb-6 text-sm">
           {{ settings.auth.login_description | default: 'Hesabına giriş yap ve maceraya kaldığın yerden devam et.' }}
         </p>
 
-        <form id="loginForm" class="space-y-5">
+        <form id="loginForm" class="space-y-4">
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı Adı</label>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı Adı veya E-Posta</label>
             <input
               type="text"
               name="username"
               required
               placeholder="Steve"
+              autocomplete="username"
               class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             >
           </div>
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="block text-sm font-bold text-gray-700">Şifre</label>
-              <a href="/auth/password/forgot" class="text-xs font-bold text-primary hover:underline"
-                >Şifremi Unuttum?</a
-              >
+              <a href="/auth/password/forgot" class="text-xs font-bold text-primary hover:underline">Şifremi Unuttum?</a>
             </div>
             <input
               type="password"
               name="password"
               required
               placeholder="••••••••"
+              autocomplete="current-password"
               class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             >
           </div>
@@ -70,7 +82,8 @@
 
           <button
             type="submit"
-            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+            id="loginSubmitBtn"
+            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2 mt-2"
           >
             <span>Giriş Yap</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +92,27 @@
           </button>
         </form>
 
-        <p class="text-center text-sm text-gray-500 font-medium mt-8">
+        <!-- Divider -->
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-200"></div>
+          </div>
+          <div class="relative flex justify-center text-xs uppercase">
+            <span class="bg-white px-3 text-gray-400 font-bold">veya</span>
+          </div>
+        </div>
+
+        <!-- Discord Login Button -->
+        <button
+          type="button"
+          onclick="handleDiscordAuth('login')"
+          class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold rounded-xl px-4 py-3 transition-all shadow-md shadow-[#5865F2]/20 flex items-center justify-center gap-2.5 text-sm"
+        >
+          <i class="fa-brands fa-discord text-lg"></i>
+          <span>Discord ile Giriş Yap</span>
+        </button>
+
+        <p class="text-center text-sm text-gray-500 font-medium mt-6">
           Henüz hesabın yok mu?
           <button onclick="toggleAuth('register')" class="text-primary hover:underline font-bold ml-1">
             Hemen Kayıt Ol
@@ -87,21 +120,21 @@
         </p>
       </div>
 
+      <!-- ========================================== -->
+      <!-- 2. REGISTER CONTAINER -->
+      <!-- ========================================== -->
       <div
         id="register-container"
-        class="{% unless request.path contains 'sign-up' %}hidden{% endunless %} animate-[fade-in_300ms_ease-out]"
+        class="{% unless request.path contains 'sign-up' %}hidden{% endunless %} auth-step animate-[fade-in_300ms_ease-out]"
       >
         <h1 class="text-3xl font-black text-gray-900 mb-2 tracking-tight">
           {{ settings.auth.register_title | default: 'Maceraya Katıl!' }}
         </h1>
-        <p class="text-gray-500 font-medium mb-8">
-          {{
-            settings.auth.register_description
-            | default: 'Hemen ücretsiz bir hesap oluştur ve binlerce oyuncu arasına katıl.'
-          }}
+        <p class="text-gray-500 font-medium mb-6 text-sm">
+          {{ settings.auth.register_description | default: 'Hemen ücretsiz bir hesap oluştur ve binlerce oyuncu arasına katıl.' }}
         </p>
 
-        <form id="registerForm" class="space-y-5">
+        <form id="registerForm" class="space-y-4">
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı Adı (Oyundaki Adın)</label>
             <input
@@ -109,6 +142,7 @@
               name="username"
               required
               placeholder="Steve"
+              autocomplete="username"
               class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             >
           </div>
@@ -119,6 +153,7 @@
               name="email"
               required
               placeholder="steve@minecraft.net"
+              autocomplete="email"
               class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             >
           </div>
@@ -130,6 +165,7 @@
               id="registerPassword"
               required
               placeholder="••••••••"
+              autocomplete="new-password"
               class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             >
           </div>
@@ -138,9 +174,10 @@
             <input
               type="password"
               name="confirm_password"
-              id="registerConfirmPassword"
+              id="register-confirm-password"
               required
               placeholder="••••••••"
+              autocomplete="new-password"
               class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             >
           </div>
@@ -151,7 +188,8 @@
 
           <button
             type="submit"
-            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+            id="registerSubmitBtn"
+            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2 mt-2"
           >
             <span>Hesap Oluştur</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,15 +198,206 @@
           </button>
         </form>
 
-        <p class="text-center text-sm text-gray-500 font-medium mt-8">
+        <p class="text-center text-sm text-gray-500 font-medium mt-6">
           Zaten bir hesabın var mı?
           <button onclick="toggleAuth('login')" class="text-primary hover:underline font-bold ml-1">Giriş Yap</button>
         </p>
       </div>
+
+      <!-- ========================================== -->
+      <!-- 3. EMAIL OTP VERIFICATION CONTAINER -->
+      <!-- ========================================== -->
+      <div id="email-otp-container" class="hidden auth-step animate-[fade-in_300ms_ease-out]">
+        <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 mb-4 border border-amber-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+
+        <h1 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">E-Posta Doğrulama Kodu</h1>
+        <p class="text-gray-500 font-medium mb-3 text-sm">
+          Hesabınıza güvenle erişebilmeniz için <strong id="otpMaskedEmail" class="text-gray-800 font-bold">e-posta adresinize</strong> 6 haneli doğrulama kodu gönderildi.
+        </p>
+
+        <div class="mb-5 p-3 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-800 text-xs font-medium flex items-start gap-2.5">
+          <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>E-posta gelen kutunuzda görünmüyorsa lütfen <strong>Spam (Gereksiz)</strong> klasörünüzü kontrol ediniz.</span>
+        </div>
+
+        <form id="emailOtpForm" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">6 Haneli Doğrulama Kodu</label>
+            <input
+              type="text"
+              name="otpCode"
+              id="otpCodeInput"
+              required
+              maxlength="8"
+              placeholder="123456"
+              autocomplete="one-time-code"
+              class="w-full text-center tracking-[0.4em] font-mono text-2xl font-black bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+
+          <button
+            type="submit"
+            id="otpSubmitBtn"
+            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+          >
+            <span>Doğrula ve Giriş Yap</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 text-xs font-bold">
+          <button
+            type="button"
+            id="resendOtpBtn"
+            onclick="resendEmailOtp()"
+            class="text-primary hover:underline flex items-center gap-1.5"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span>Kodu Tekrar Gönder</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="switchAuthStep('login-container')"
+            class="text-gray-500 hover:text-gray-800"
+          >
+            Girişe Dön
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- 4. TEMP EMAIL UPDATE CONTAINER -->
+      <!-- ========================================== -->
+      <div id="temp-email-container" class="hidden auth-step animate-[fade-in_300ms_ease-out]">
+        <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-4 border border-purple-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </div>
+
+        <h1 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">E-Posta Adresinizi Tanımlayın</h1>
+        <p class="text-gray-500 font-medium mb-6 text-sm">
+          Hesabınız oyun sunucusundan oluşturulmuştur. Hesabınızı güvenceye almak ve web sitesine giriş yapabilmek için lütfen geçerli bir e-posta adresi giriniz.
+        </p>
+
+        <form id="tempEmailForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Geçerli E-Posta Adresiniz</label>
+            <input
+              type="email"
+              name="tempEmailInput"
+              id="tempEmailInput"
+              required
+              placeholder="ornek@gmail.com"
+              class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+
+          <button
+            type="submit"
+            id="tempEmailSubmitBtn"
+            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+          >
+            <span>Kaydet ve Doğrulama Kodu İste</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="text-center mt-6 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            onclick="switchAuthStep('login-container')"
+            class="text-xs font-bold text-gray-500 hover:text-gray-800"
+          >
+            Girişe Dön
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- 5. 2FA VERIFICATION CONTAINER -->
+      <!-- ========================================== -->
+      <div id="twofa-container" class="hidden auth-step animate-[fade-in_300ms_ease-out]">
+        <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-4 border border-indigo-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+
+        <h1 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">İki Aşamalı Doğrulama (2FA)</h1>
+        <p class="text-gray-500 font-medium mb-5 text-sm" id="twofaDescription">
+          Hesabınız iki aşamalı doğrulama ile korunmaktadır. Lütfen güvenlik kodunuzu giriniz.
+        </p>
+
+        <!-- 2FA Methods Picker (if multiple) -->
+        <div id="twofaMethodsContainer" class="mb-5 flex flex-wrap gap-2">
+          <!-- Populated via JS -->
+        </div>
+
+        <form id="twofaForm" class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label id="twofaInputLabel" class="block text-sm font-bold text-gray-700">6 Haneli 2FA Kodu</label>
+              <button
+                type="button"
+                id="twofaEmailSendBtn"
+                onclick="sendTwoFaEmailCode()"
+                class="hidden text-xs font-bold text-primary hover:underline"
+              >
+                Kodu E-Postama Gönder
+              </button>
+            </div>
+            <input
+              type="text"
+              name="twofaCode"
+              id="twofaCodeInput"
+              required
+              placeholder="123456"
+              autocomplete="one-time-code"
+              class="w-full text-center tracking-[0.3em] font-mono text-2xl font-black bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+          </div>
+
+          <button
+            type="submit"
+            id="twofaSubmitBtn"
+            class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3.5 hover:brightness-110 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+          >
+            <span>Doğrula ve Giriş Yap</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="text-center mt-6 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            onclick="switchAuthStep('login-container')"
+            class="text-xs font-bold text-gray-500 hover:text-gray-800"
+          >
+            Girişe Dön
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- RIGHT SIDE: Image/Promo -->
+  <!-- RIGHT SIDE: Image / Promo -->
   <div class="hidden lg:flex lg:w-1/2 relative bg-gray-900 overflow-hidden rounded-l-[3rem] shadow-2xl m-4">
     <img
       src="{% if settings.auth.background %}{{ settings.auth.background }}{% elsif settings.header.banner %}{{ settings.header.banner }}{% else %}https://images.unsplash.com/photo-1627856013091-fed6e4e30025?q=80&w=2070&auto=format&fit=crop{% endif %}"
@@ -203,6 +432,15 @@
 </div>
 
 <script>
+  // State variables for Auth Flows
+  let currentAuthTokens = {
+    emailToken: null,
+    tempToken: null,
+    maskedEmail: null,
+    twoFaMethods: [],
+    currentTwoFaMethod: 'authenticator',
+  };
+
   // Dynamic Online Players
   const serverIp = '{{ settings.server_ip | default: "play.crafter.com.tr" }}';
   async function fetchAuthServerStatus() {
@@ -230,24 +468,127 @@
     }
   });
 
-  function toggleAuth(type) {
-    const login = document.getElementById('login-container');
-    const register = document.getElementById('register-container');
-
-    // Update URL path without reload
-    const newPath = type === 'register' ? '/auth/sign-up' : '/auth/sign-in';
-    window.history.pushState({}, '', newPath);
-
-    if (type === 'register') {
-      login.classList.add('hidden');
-      register.classList.remove('hidden');
-    } else {
-      register.classList.add('hidden');
-      login.classList.remove('hidden');
+  // Switch between auth steps
+  function switchAuthStep(stepId) {
+    document.querySelectorAll('.auth-step').forEach((el) => el.classList.add('hidden'));
+    const target = document.getElementById(stepId);
+    if (target) {
+      target.classList.remove('hidden');
     }
   }
 
-  // Handle Login
+  function toggleAuth(type) {
+    const newPath = type === 'register' ? '/auth/sign-up' : '/auth/sign-in';
+    window.history.pushState({}, '', newPath);
+    switchAuthStep(type === 'register' ? 'register-container' : 'login-container');
+  }
+
+  // Show Alert Banner
+  function showAlert(title, description, type = 'error') {
+    const banner = document.getElementById('auth-alert-banner');
+    const titleEl = document.getElementById('auth-alert-title');
+    const descEl = document.getElementById('auth-alert-desc');
+    const iconEl = document.getElementById('auth-alert-icon');
+
+    if (!banner || !titleEl || !descEl) return;
+
+    if (type === 'error') {
+      banner.className = 'mb-6 p-4 rounded-2xl border bg-red-50 border-red-200 text-red-700 text-sm font-medium flex items-start gap-3 animate-[fade-in_300ms_ease-out]';
+      iconEl.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+    } else if (type === 'success') {
+      banner.className = 'mb-6 p-4 rounded-2xl border bg-green-50 border-green-200 text-green-700 text-sm font-medium flex items-start gap-3 animate-[fade-in_300ms_ease-out]';
+      iconEl.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+    } else {
+      banner.className = 'mb-6 p-4 rounded-2xl border bg-blue-50 border-blue-200 text-blue-700 text-sm font-medium flex items-start gap-3 animate-[fade-in_300ms_ease-out]';
+      iconEl.innerHTML = `<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+    }
+
+    titleEl.innerText = title;
+    descEl.innerText = description;
+    banner.classList.remove('hidden');
+
+    if (window.showToast) {
+      window.showToast(description || title, type);
+    }
+  }
+
+  // Save tokens and redirect
+  function handleSuccessfulLogin(result) {
+    const payload = result.data || result;
+    if (payload.accessToken || result.accessToken) {
+      try {
+        localStorage.setItem('accessToken', payload.accessToken || result.accessToken);
+        if (payload.refreshToken || result.refreshToken) {
+          localStorage.setItem('refreshToken', payload.refreshToken || result.refreshToken);
+        }
+        if (payload.user || result.user) {
+          localStorage.setItem('user', JSON.stringify(payload.user || result.user));
+        }
+      } catch (e) {}
+    }
+
+    showAlert('Giriş Başarılı', payload.message || result.message || 'Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnUrl = urlParams.get('return') || '/';
+    setTimeout(() => {
+      window.location.href = returnUrl;
+    }, 600);
+  }
+
+  // Check URL params for Discord Callback or other states
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get('accessToken');
+    const refreshToken = params.get('refreshToken');
+    const discordError = params.get('discord_error');
+    const discordUsername = params.get('discord_username');
+    const generalError = params.get('error');
+
+    if (accessToken) {
+      handleSuccessfulLogin({
+        accessToken,
+        refreshToken,
+        message: 'Discord ile giriş başarılı!',
+      });
+      return;
+    }
+
+    if (discordError === 'NOT_LINKED') {
+      const uName = discordUsername ? decodeURIComponent(discordUsername) : 'Discord';
+      showAlert(
+        'Discord Hesabı Bağlı Değil',
+        `"${uName}" Discord hesabınız ile eşleşen bir kullanıcı bulunamadı. Lütfen önce standart kullanıcı adınız ve şifrenizle giriş yapıp profil ayarlarınızdan Discord hesabınızı bağlayınız.`,
+        'error'
+      );
+    } else if (discordError) {
+      showAlert('Discord Bağlantı Hatası', decodeURIComponent(discordError), 'error');
+    } else if (generalError) {
+      showAlert('Giriş Hatası', decodeURIComponent(generalError), 'error');
+    }
+  });
+
+  // Discord OAuth Redirect
+  async function handleDiscordAuth(action = 'login') {
+    try {
+      const redirectUri = window.location.origin + '/auth/sign-in';
+      const res = await fetch(`/api/storefront/v2/auth/discord?action=${action}&redirectUri=${encodeURIComponent(redirectUri)}`);
+      const data = await res.json();
+      if (data.success && data.data?.oauthUrl) {
+        window.location.href = data.data.oauthUrl;
+      } else if (data.oauthUrl) {
+        window.location.href = data.oauthUrl;
+      } else {
+        showToast(data.message || 'Discord giriş bağlantısı alınamadı!', 'error');
+      }
+    } catch (e) {
+      showToast('Discord servisine bağlanılamadı!', 'error');
+    }
+  }
+
+  // ==========================================
+  // 1. SIGN IN SUBMIT HANDLER (Handles 4 Scenarios)
+  // ==========================================
   document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -258,11 +599,11 @@
       delete data['cf-turnstile-response'];
     }
 
-    const btn = e.target.querySelector('button');
+    const btn = document.getElementById('loginSubmitBtn');
     const originalText = btn.innerHTML;
 
     btn.disabled = true;
-    btn.innerHTML = '<span class="animate-pulse">Giriş yapılıyor...</span>';
+    btn.innerHTML = '<span class="animate-pulse">Kontrol ediliyor...</span>';
 
     try {
       const res = await fetch('/api/storefront/v2/auth/signin', {
@@ -272,21 +613,72 @@
       });
       const result = await res.json();
 
-      if (result.success) {
-        window.location.href = '/';
-      } else {
-        showToast(result.message || 'Giriş başarısız!', 'error');
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+      // SCENARIO 1: Direct Standard Login Success
+      if (result.accessToken) {
+        handleSuccessfulLogin(result);
+        return;
       }
+
+      // SCENARIO 4: 2FA Required
+      if (result.requires2FA || result.data?.requires2FA) {
+        const payload = result.data || result;
+        currentAuthTokens.tempToken = payload.tempToken;
+        currentAuthTokens.twoFaMethods = payload.twoFactorMethods || payload.methods || ['authenticator'];
+        currentAuthTokens.currentTwoFaMethod = payload.primaryMethod || payload.twoFactorMethods?.[0] || payload.methods?.[0] || 'authenticator';
+        currentAuthTokens.maskedEmail = payload.maskedEmail || '';
+        currentAuthTokens.discordUsername = payload.discordUsername || '';
+
+        // If primary method is Discord, auto-trigger bot DM send
+        if (currentAuthTokens.currentTwoFaMethod === 'discord' && currentAuthTokens.tempToken) {
+          fetch('/api/storefront/v2/auth/2fa/send-discord-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tempToken: currentAuthTokens.tempToken }),
+          }).catch(() => {});
+        }
+
+        renderTwoFaMethodPicker();
+        switchAuthStep('twofa-container');
+        document.getElementById('twofaCodeInput').focus();
+        showToast(payload.message || 'İki aşamalı doğrulama kodunuzu giriniz.', 'info');
+        return;
+      }
+
+      // SCENARIO 2: Email Verification OTP Required
+      if ((result.requiresEmailVerification || result.data?.requiresEmailVerification) && !result.isTempEmail && !result.data?.isTempEmail) {
+        const payload = result.data || result;
+        currentAuthTokens.emailToken = payload.emailToken;
+        currentAuthTokens.maskedEmail = payload.maskedEmail || '';
+        document.getElementById('otpMaskedEmail').innerText = payload.maskedEmail || 'e-posta adresinize';
+        switchAuthStep('email-otp-container');
+        document.getElementById('otpCodeInput').focus();
+        showToast(payload.message || 'Lütfen e-posta doğrulama kodunuzu giriniz.', 'info');
+        return;
+      }
+
+      // SCENARIO 3: Temp Email (@temp.com) User
+      if ((result.requiresEmailVerification || result.data?.requiresEmailVerification) && (result.isTempEmail || result.data?.isTempEmail)) {
+        const payload = result.data || result;
+        currentAuthTokens.tempToken = payload.tempToken;
+        switchAuthStep('temp-email-container');
+        document.getElementById('tempEmailInput').focus();
+        showToast(payload.message || 'Lütfen geçerli bir e-posta adresi giriniz.', 'info');
+        return;
+      }
+
+      // Failure
+      showToast(result.message || 'Giriş başarısız!', 'error');
     } catch (err) {
-      showToast('Bağlantı hatası!', 'error');
+      showToast('Sunucu bağlantı hatası!', 'error');
+    } finally {
       btn.disabled = false;
       btn.innerHTML = originalText;
     }
   });
 
-  // Handle Register
+  // ==========================================
+  // 2. SIGN UP SUBMIT HANDLER
+  // ==========================================
   document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -302,7 +694,7 @@
       return;
     }
 
-    const btn = e.target.querySelector('button');
+    const btn = document.getElementById('registerSubmitBtn');
     const originalText = btn.innerHTML;
 
     btn.disabled = true;
@@ -317,19 +709,334 @@
       const result = await res.json();
 
       if (result.success) {
-        showToast('Kayıt başarılı! Şimdi giriş yapabilirsiniz.', 'success');
-        toggleAuth('login');
-        // Pre-fill username
-        document.querySelector('#loginForm input[name="username"]').value = data.username;
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+        if (result.accessToken) {
+          handleSuccessfulLogin(result);
+        } else {
+          showToast('Kayıt başarılı! Şimdi giriş yapabilirsiniz.', 'success');
+          toggleAuth('login');
+          const loginUserInput = document.querySelector('#loginForm input[name="username"]');
+          if (loginUserInput) loginUserInput.value = data.username;
+        }
       } else {
         showToast(result.message || 'Kayıt başarısız!', 'error');
-        btn.disabled = false;
-        btn.innerHTML = originalText;
       }
     } catch (err) {
       showToast('Bağlantı hatası!', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
+
+  // ==========================================
+  // 3. EMAIL OTP SUBMIT & RESEND HANDLERS
+  // ==========================================
+  document.getElementById('emailOtpForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = document.getElementById('otpCodeInput').value.trim();
+
+    if (!code || !currentAuthTokens.emailToken) {
+      showToast('Lütfen geçerli bir kod giriniz.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('otpSubmitBtn');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-pulse">Doğrulanıyor...</span>';
+
+    try {
+      const res = await fetch('/api/storefront/v2/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emailToken: currentAuthTokens.emailToken,
+          code: code,
+        }),
+      });
+      const result = await res.json();
+
+      if (result.accessToken || (result.success && result.accessToken) || result.data?.accessToken) {
+        handleSuccessfulLogin(result.data || result);
+      } else {
+        showToast(result.message || result.data?.message || 'Geçersiz doğrulama kodu!', 'error');
+      }
+    } catch (err) {
+      showToast('Doğrulama sırasında hata oluştu!', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
+
+  async function resendEmailOtp() {
+    if (!currentAuthTokens.emailToken) {
+      showToast('Doğrulama oturumu bulunamadı.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('resendOtpBtn');
+    btn.disabled = true;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<span class="animate-pulse">Gönderiliyor...</span>';
+
+    try {
+      const res = await fetch('/api/storefront/v2/auth/resend-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailToken: currentAuthTokens.emailToken }),
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        showToast(result.message || 'Yeni doğrulama kodu e-postanıza gönderildi.', 'success');
+        let countdown = 60;
+        const interval = setInterval(() => {
+          btn.innerHTML = `<span>Tekrar gönder (${countdown}s)</span>`;
+          countdown--;
+          if (countdown < 0) {
+            clearInterval(interval);
+            btn.disabled = false;
+            btn.innerHTML = oldText;
+          }
+        }, 1000);
+      } else {
+        showToast(result.message || 'Kod gönderilemedi!', 'error');
+        btn.disabled = false;
+        btn.innerHTML = oldText;
+      }
+    } catch (e) {
+      showToast('Bağlantı hatası!', 'error');
+      btn.disabled = false;
+      btn.innerHTML = oldText;
+    }
+  }
+
+  // ==========================================
+  // 4. TEMP EMAIL UPDATE HANDLER
+  // ==========================================
+  document.getElementById('tempEmailForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('tempEmailInput').value.trim();
+
+    if (!email || !currentAuthTokens.tempToken) {
+      showToast('Lütfen geçerli bir e-posta adresi giriniz.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('tempEmailSubmitBtn');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-pulse">Kaydediliyor...</span>';
+
+    try {
+      const res = await fetch('/api/storefront/v2/auth/update-temp-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tempToken: currentAuthTokens.tempToken,
+          email: email,
+        }),
+      });
+      const result = await res.json();
+
+      if (result.success && result.emailToken) {
+        currentAuthTokens.emailToken = result.emailToken;
+        currentAuthTokens.maskedEmail = email;
+        document.getElementById('otpMaskedEmail').innerText = email;
+        switchAuthStep('email-otp-container');
+        document.getElementById('otpCodeInput').focus();
+        showToast(result.message || 'Doğrulama kodu yeni e-posta adresinize gönderildi.', 'success');
+      } else {
+        showToast(result.message || 'E-posta güncellenemedi!', 'error');
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası!', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
+
+  // ==========================================
+  // 5. 2FA VERIFICATION HANDLERS
+  // ==========================================
+  function renderTwoFaMethodPicker() {
+    const container = document.getElementById('twofaMethodsContainer');
+    const emailSendBtn = document.getElementById('twofaEmailSendBtn');
+    const inputLabel = document.getElementById('twofaInputLabel');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const methods = currentAuthTokens.twoFaMethods;
+
+    // Build selectable method pills if multiple methods exist
+    methods.forEach((method) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const isActive = currentAuthTokens.currentTwoFaMethod === method;
+      btn.className = `px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+        isActive
+          ? 'bg-primary text-white border-primary shadow-sm'
+          : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+      }`;
+
+      let label = 'Authenticator';
+      if (method === 'email') label = 'E-Posta Kodu';
+      else if (method === 'discord') label = 'Discord';
+      else if (method === 'recovery_code') label = 'Kurtarma Kodu';
+
+      btn.innerText = label;
+      btn.onclick = () => {
+        currentAuthTokens.currentTwoFaMethod = method;
+        renderTwoFaMethodPicker();
+      };
+      container.appendChild(btn);
+    });
+
+    // Add recovery code toggle if not in methods
+    if (!methods.includes('recovery_code')) {
+      const recBtn = document.createElement('button');
+      recBtn.type = 'button';
+      const isRecActive = currentAuthTokens.currentTwoFaMethod === 'recovery_code';
+      recBtn.className = `px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+        isRecActive
+          ? 'bg-primary text-white border-primary shadow-sm'
+          : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+      }`;
+      recBtn.innerText = 'Kurtarma Kodu';
+      recBtn.onclick = () => {
+        currentAuthTokens.currentTwoFaMethod = 'recovery_code';
+        renderTwoFaMethodPicker();
+      };
+      container.appendChild(recBtn);
+    }
+
+    if (currentAuthTokens.currentTwoFaMethod === 'discord') {
+      if (emailSendBtn) {
+        emailSendBtn.classList.remove('hidden');
+        emailSendBtn.innerText = 'Kodu Discord DM\'den Tekrar Gönder';
+        emailSendBtn.onclick = sendTwoFaDiscordCode;
+      }
+      if (inputLabel) inputLabel.innerText = '6 Haneli Discord Güvenlik Kodu';
+      const desc = document.getElementById('twofaDescription');
+      if (desc) {
+        desc.innerHTML = `Discord hesabınıza (<strong>${currentAuthTokens.discordUsername ? '@' + currentAuthTokens.discordUsername : 'Discord'}</strong>) 6 haneli bir giriş kodu gönderdik. Lütfen DM kutunuzu kontrol edin.`;
+      }
+    } else if (currentAuthTokens.currentTwoFaMethod === 'email') {
+      if (emailSendBtn) {
+        emailSendBtn.classList.remove('hidden');
+        emailSendBtn.innerText = 'Kodu E-Postama Gönder';
+        emailSendBtn.onclick = sendTwoFaEmailCode;
+      }
+      if (inputLabel) inputLabel.innerText = '6 Haneli E-Posta Kodu';
+      const desc = document.getElementById('twofaDescription');
+      if (desc) desc.innerText = 'E-posta adresinize gönderilen 6 haneli kodu giriniz.';
+    } else if (currentAuthTokens.currentTwoFaMethod === 'recovery_code') {
+      if (emailSendBtn) emailSendBtn.classList.add('hidden');
+      if (inputLabel) inputLabel.innerText = '8 Haneli Kurtarma Kodu';
+      const desc = document.getElementById('twofaDescription');
+      if (desc) desc.innerText = 'Tek kullanımlık 8 haneli kurtarma kodunuzu giriniz.';
+    } else {
+      if (emailSendBtn) emailSendBtn.classList.add('hidden');
+      if (inputLabel) inputLabel.innerText = '6 Haneli Authenticator Kodu';
+      const desc = document.getElementById('twofaDescription');
+      if (desc) desc.innerText = 'Authenticator uygulamanızdaki 6 haneli kodu giriniz.';
+    }
+  }
+
+  async function sendTwoFaDiscordCode() {
+    if (!currentAuthTokens.tempToken) return;
+    const btn = document.getElementById('twofaEmailSendBtn');
+    btn.disabled = true;
+    btn.innerText = 'Kod gönderiliyor...';
+
+    try {
+      const res = await fetch('/api/storefront/v2/auth/2fa/send-discord-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tempToken: currentAuthTokens.tempToken }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message || 'Güvenlik kodu Discord DM kutunuza gönderildi.', 'success');
+      } else {
+        showToast(data.message || 'Kod gönderilemedi.', 'error');
+      }
+    } catch (e) {
+      showToast('Bağlantı hatası!', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Kodu Discord DM\'den Tekrar Gönder';
+    }
+  }
+
+  async function sendTwoFaEmailCode() {
+    if (!currentAuthTokens.tempToken) {
+      showToast('Doğrulama oturumu süresi dolmuş olabilir.', 'error');
+      return;
+    }
+    const btn = document.getElementById('twofaEmailSendBtn');
+    btn.disabled = true;
+    btn.innerText = 'Kod gönderiliyor...';
+
+    try {
+      const res = await fetch('/api/storefront/v2/auth/2fa/send-email-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tempToken: currentAuthTokens.tempToken }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message || '2FA kodu e-posta adresinize gönderildi.', 'success');
+      } else {
+        showToast(data.message || 'Kod gönderilemedi.', 'error');
+      }
+    } catch (e) {
+      showToast('Bağlantı hatası!', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Kodu E-Postama Gönder';
+    }
+  }
+
+  document.getElementById('twofaForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = document.getElementById('twofaCodeInput').value.trim();
+
+    if (!code || !currentAuthTokens.tempToken) {
+      showToast('Lütfen geçerli bir kod giriniz.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('twofaSubmitBtn');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-pulse">Doğrulanıyor...</span>';
+
+    try {
+      const res = await fetch('/api/storefront/v2/auth/2fa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tempToken: currentAuthTokens.tempToken,
+          method: currentAuthTokens.currentTwoFaMethod,
+          code: code,
+        }),
+      });
+      const result = await res.json();
+
+      if (result.accessToken || (result.success && result.accessToken) || result.data?.accessToken) {
+        handleSuccessfulLogin(result.data || result);
+      } else {
+        showToast(result.message || result.data?.message || 'Doğrulama kodu hatalı!', 'error');
+      }
+    } catch (err) {
+      showToast('2FA doğrulama sırasında bir hata oluştu!', 'error');
+    } finally {
       btn.disabled = false;
       btn.innerHTML = originalText;
     }
