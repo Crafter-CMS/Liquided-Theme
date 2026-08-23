@@ -699,37 +699,108 @@
       }
 
       // Toast Notification Logic
-      function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
+      window.showToast = function(message, type = 'info') {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'toast-container';
+          container.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2 pointer-events-none';
+          document.body.appendChild(container);
+        }
+
         const toast = document.createElement('div');
-        toast.className = `px-6 py-3.5 rounded-full shadow-2xl text-sm font-bold text-white transform transition-all duration-300 translate-y-10 opacity-0 flex items-center gap-2 ${
-          type === 'success' ? 'bg-green-500' : 'bg-primary'
-        }`;
+        let bgStyle = 'bg-gray-900 border-gray-700 text-white shadow-2xl';
+        let icon = `<svg class="w-5 h-5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
 
-        const icon =
-          type === 'success'
-            ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`
-            : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+        if (type === 'success') {
+          bgStyle = 'bg-emerald-600 border-emerald-500 text-white shadow-emerald-900/50 shadow-xl';
+          icon = `<svg class="w-5 h-5 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+        } else if (type === 'error') {
+          bgStyle = 'bg-red-600 border-red-500 text-white shadow-red-900/50 shadow-xl';
+          icon = `<svg class="w-5 h-5 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+        } else if (type === 'warning') {
+          bgStyle = 'bg-amber-600 border-amber-500 text-white shadow-amber-900/50 shadow-xl';
+          icon = `<svg class="w-5 h-5 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+        }
 
-        toast.innerHTML = icon + message;
+        toast.className = `pointer-events-auto px-6 py-3.5 rounded-2xl shadow-2xl text-sm font-bold border transform transition-all duration-300 translate-y-6 opacity-0 flex items-center gap-3 max-w-md ${bgStyle}`;
+        toast.innerHTML = icon + `<span>${message}</span>`;
         container.appendChild(toast);
 
         requestAnimationFrame(() => {
-          toast.classList.remove('translate-y-10', 'opacity-0');
+          toast.classList.remove('translate-y-6', 'opacity-0');
           toast.classList.add('translate-y-0', 'opacity-100');
         });
 
         setTimeout(() => {
           toast.classList.remove('translate-y-0', 'opacity-100');
-          toast.classList.add('translate-y-10', 'opacity-0');
+          toast.classList.add('translate-y-6', 'opacity-0');
           setTimeout(() => toast.remove(), 300);
-        }, 3000);
-      }
+        }, 4000);
+      };
 
       function copyIp(ip) {
         navigator.clipboard.writeText(ip);
-        showToast('Sunucu adresi başarıyla kopyalandı!', 'success');
+        window.showToast('Sunucu adresi başarıyla kopyalandı!', 'success');
       }
+
+      // Global Callback & URL Params Handler
+      document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('accessToken');
+        const refreshToken = urlParams.get('refreshToken');
+        const discordStatus = urlParams.get('discord_status');
+        const discordError = urlParams.get('discord_error');
+        const discordUsername = urlParams.get('discord_username');
+        const generalError = urlParams.get('error');
+
+        const isAuthPage = window.location.pathname.includes('/auth');
+
+        if (accessToken) {
+          try {
+            localStorage.setItem('accessToken', accessToken);
+            if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+          } catch(e) {}
+          if (!isAuthPage) {
+            window.showToast('Giriş başarılı! Hoş geldiniz.', 'success');
+            urlParams.delete('accessToken');
+            urlParams.delete('refreshToken');
+            const cleanUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+        }
+
+        if (discordStatus === 'connected' && !isAuthPage) {
+          const uName = discordUsername ? decodeURIComponent(discordUsername) : '';
+          window.showToast(uName ? `"${uName}" Discord hesabınız başarıyla bağlandı!` : 'Discord hesabınız başarıyla bağlandı!', 'success');
+          urlParams.delete('discord_status');
+          urlParams.delete('discord_username');
+          const cleanUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+
+        if (discordError && !isAuthPage) {
+          if (discordError === 'NOT_LINKED') {
+            const uName = discordUsername ? decodeURIComponent(discordUsername) : 'Discord';
+            window.showToast(`"${uName}" Discord hesabı herhangi bir oyuncu hesabıyla eşleştirilmemiş. Lütfen önce giriş yapıp profilinizden Discord'u bağlayın.`, 'error');
+          } else if (discordError === 'ALREADY_LINKED_TO_ANOTHER_ACCOUNT') {
+            window.showToast('Bu Discord hesabı zaten başka bir oyuncu hesabına bağlı!', 'error');
+          } else if (discordError === 'USER_BANNED') {
+            window.showToast('Hesabınız yasaklanmıştır.', 'error');
+          } else {
+            window.showToast(decodeURIComponent(discordError), 'error');
+          }
+          urlParams.delete('discord_error');
+          urlParams.delete('discord_username');
+          const cleanUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+          window.history.replaceState({}, document.title, cleanUrl);
+        } else if (generalError && !isAuthPage) {
+          window.showToast(decodeURIComponent(generalError), 'error');
+          urlParams.delete('error');
+          const cleanUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+      });
     </script>
 
     <!-- MAIN CONTENT -->
