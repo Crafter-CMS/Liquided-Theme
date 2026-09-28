@@ -152,64 +152,53 @@
         `;
 
         try {
-          const res = await fetch('/api/storefront/redeem-codes/use', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code }),
-          });
+          const data = await window.crafter.redeemCode.use(code);
 
-          const data = await res.json();
+          boxSuccess.classList.remove('hidden');
+          textSuccess.innerText = data?.message || 'Kupon başarıyla bozduruldu.';
+          inputCode.value = '';
 
-          if (res.ok && !data.error) {
-            boxSuccess.classList.remove('hidden');
-            textSuccess.innerText = data.message || 'Kupon başarıyla bozduruldu.';
-            inputCode.value = '';
-
-            if (data.bonus || (data.products && data.products.length > 0)) {
-              let html = '';
-              if (data.bonus) {
-                html += `
-                  <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-green-100 shadow-sm mt-4">
-                    <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center font-black text-xl border border-green-100">₺</div>
-                    <div>
-                      <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Kazanılan Bakiye</div>
-                      <div class="font-black text-green-600">+${data.bonus} ₺</div>
-                    </div>
+          if (data?.bonus || (data?.products && data.products.length > 0)) {
+            let html = '';
+            if (data.bonus) {
+              html += `
+                <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-green-100 shadow-sm mt-4">
+                  <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center font-black text-xl border border-green-100">₺</div>
+                  <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Kazanılan Bakiye</div>
+                    <div class="font-black text-green-600">+${data.bonus} ₺</div>
                   </div>
-                `;
-              }
-              if (data.products && data.products.length > 0) {
-                const pList = data.products
-                  .map(
-                    (p) => `
-                  <li class="flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                    <span class="font-bold text-gray-700">${p.name}</span>
-                  </li>
-                `
-                  )
-                  .join('');
-                html += `
-                  <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-green-100 shadow-sm mt-2">
-                    <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
-                    </div>
-                    <div>
-                      <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1 mt-0.5">Kazanılan Ürünler</div>
-                      <ul class="space-y-1 text-sm">${pList}</ul>
-                    </div>
-                  </div>
-                `;
-              }
-              rewardsList.innerHTML = html;
+                </div>
+              `;
             }
-          } else {
-            boxError.classList.remove('hidden');
-            textError.innerText = data.message || data.error || 'Kupon geçersiz veya kullanılmış.';
+            if (data.products && data.products.length > 0) {
+              const pList = data.products
+                .map(
+                  (p) => `
+                <li class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  <span class="font-bold text-gray-700">${p.name}</span>
+                </li>
+              `
+                )
+                .join('');
+              html += `
+                <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-green-100 shadow-sm mt-2">
+                  <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+                  </div>
+                  <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1 mt-0.5">Kazanılan Ürünler</div>
+                    <ul class="space-y-1 text-sm">${pList}</ul>
+                  </div>
+                </div>
+              `;
+            }
+            rewardsList.innerHTML = html;
           }
         } catch (err) {
           boxError.classList.remove('hidden');
-          textError.innerText = 'Sunucuyla bağlantı kurulamadı.';
+          textError.innerText = err.message || 'Kupon geçersiz veya kullanılmış.';
         } finally {
           btnSubmit.disabled = false;
           btnSubmit.innerHTML = `

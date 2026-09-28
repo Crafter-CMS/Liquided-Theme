@@ -312,34 +312,4 @@
   {% endif %}
 </div>
 
-<!-- Sepete Ekleme Toast -->
-<div
-  id="cart-toast"
-  class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full font-bold text-sm opacity-0 pointer-events-none transition-all duration-300 z-[9999] shadow-lg shadow-green-500/30 translate-y-4 flex items-center gap-2"
->
-  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-  </svg>
-  Başarıyla Sepete Eklendi!
-</div>
 
-<script>
-  async function addToCart(productId) {
-    try {
-      const res = await fetch('/api/storefront/cart/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity: 1 }),
-      });
-      if (res.ok) {
-        const t = document.getElementById('cart-toast');
-        t.classList.remove('opacity-0', 'translate-y-4');
-        setTimeout(() => {
-          t.classList.add('opacity-0', 'translate-y-4');
-        }, 2500);
-      }
-    } catch (e) {
-      console.error('Sepete eklenemedi:', e);
-    }
-  }
-</script>

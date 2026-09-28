@@ -371,23 +371,11 @@
     const ticketId = '{{ ticket.id }}';
 
     try {
-      const res = await fetch(`/api/storefront/v2/tickets/${ticketId}/reply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: window.lexicalContentJSON }),
-      });
-      const result = await res.json();
-
-      if (result.success || res.ok) {
-        window.showToast?.('Yanıtınız başarıyla gönderildi!', 'success');
-        window.location.reload();
-      } else {
-        window.showToast?.(result.message || 'Bir hata oluştu.', 'error');
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-      }
+      await window.crafter.tickets.reply(ticketId, window.lexicalContentJSON);
+      window.showToast?.('Yanıtınız başarıyla gönderildi!', 'success');
+      window.location.reload();
     } catch (err) {
-      window.showToast?.('Bağlantı hatası.', 'error');
+      window.showToast?.(err.message || 'Bağlantı hatası.', 'error');
       btn.disabled = false;
       btn.innerHTML = originalText;
     }

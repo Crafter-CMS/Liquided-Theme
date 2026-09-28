@@ -136,6 +136,20 @@
               </svg>
               2FA Güvenlik
             </a>
+            {% if customer.role.permissions and customer.role.permissions.size > 0 %}
+              <a
+                href="https://app.crafter.net.tr/cms/auth?websiteId={{ customer.websiteId }}"
+                data-website-id="{{ customer.websiteId }}"
+                target="_blank"
+                onclick="return window.openCmsPanel('{{ customer.websiteId }}', event);"
+                class="cms-admin-link w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all text-left bg-purple-50 text-purple-600 hover:bg-purple-100 border-2 border-purple-100"
+              >
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                Yönetim Paneli
+              </a>
+            {% endif %}
             <a
               href="#" onclick="logoutAccount(); return false;"
               class="w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all text-left text-red-500 hover:bg-red-50 border-2 border-transparent"
@@ -412,9 +426,8 @@
       async function fetchWallMessages() {
         if (!targetUserId) return;
         try {
-          const res = await fetch(`/api/storefront/v2/users/${targetUserId}/wall`);
-          const data = await res.json();
-          const messages = data.data || data || [];
+          const data = await window.crafter.users.getWall(targetUserId);
+          const messages = data?.data || data || [];
           renderWallMessages(messages);
         } catch (err) {
           console.error(err);
@@ -431,16 +444,12 @@
           btnSend.innerText = 'Gönderiliyor...';
 
           try {
-            await fetch(`/api/storefront/v2/users/${targetUserId}/wall`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content }),
-            });
+            await window.crafter.users.postWallMessage(targetUserId, content);
             wallInput.value = '';
             fetchWallMessages();
           } catch (err) {
             console.error(err);
-            alert('Mesaj gönderilirken hata oluştu.');
+            window.showToast?.(err.message || 'Mesaj gönderilirken hata oluştu.', 'error');
           } finally {
             btnSend.disabled = false;
             btnSend.innerText = 'Gönder';
@@ -498,22 +507,24 @@
           target.innerText = '...';
 
           try {
-            await fetch(`/api/storefront/v2/users/${targetUserId}/wall/${msgId}/reply`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content }),
-            });
+            await window.crafter.users.replyWallMessage(targetUserId, msgId, content);
             input.value = '';
             fetchWallMessages();
           } catch (err) {
             console.error(err);
-            alert('Yanıt gönderilemedi.');
+            window.showToast?.(err.message || 'Yanıt gönderilemedi.', 'error');
           } finally {
             target.disabled = false;
             target.innerText = 'Yanıtla';
           }
         }
       });
+
+      // Reactive Crafter SDK Event Bus Listeners
+      if (window.crafter) {
+        window.crafter.on('wall:message_added', () => fetchWallMessages());
+        window.crafter.on('wall:reply_added', () => fetchWallMessages());
+      }
 
       // Sayfa yüklendiğinde önbellekteki veriyi kullanarak çiz veya çek
       if (isOwnProfile && Array.isArray(window.SERVER_WALL_MESSAGES) && window.SERVER_WALL_MESSAGES.length >= 0) {

@@ -439,13 +439,12 @@
           notifContainer.classList.add('hidden');
 
           try {
-            const res = await fetch(`/api/storefront/v2/users/@${query}`);
-            const data = await res.json();
+            const data = await window.crafter.users.getByUsername(query);
             
             // Eğer dönen veri doğrudan kullanıcı objesi ise (data.id var ise) veya data.data içinde ise
-            const foundUser = data.data ? data.data : (data.id ? data : null);
+            const foundUser = data?.data ? data.data : (data?.id ? data : null);
             
-            if (!res.ok || !foundUser) {
+            if (!foundUser) {
               throw new Error("Kullanıcı bulunamadı.");
             }
             
@@ -467,7 +466,7 @@
             searchInput.value = "";
             
           } catch(err) {
-            showNotification("Kullanıcı bulunamadı.");
+            showNotification(err.message || "Kullanıcı bulunamadı.");
             currentSelectedUser = null;
             selectedUserCard.classList.add('hidden');
           } finally {
@@ -511,40 +510,21 @@
             if (currentGiftType === 'balance') {
               const amt = parseFloat(amountInput.value);
               
-              const res = await fetch(`/api/storefront/users/me/balance/send`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                  targetUserId: currentSelectedUser.id, 
-                  amount: amt 
-                })
+              await window.crafter.users.sendBalance({ 
+                targetUserId: currentSelectedUser.id, 
+                amount: amt 
               });
               
-              const data = await res.json();
-              if (res.ok && data.success) {
-                showNotification(`${amt.toFixed(2)} {{ store.currency | default: 'TRY' }} başarıyla ${currentSelectedUser.username} adlı kullanıcıya gönderildi!`, false);
-                setTimeout(() => window.location.reload(), 2000);
-              } else {
-                showNotification(data.message || "Hediye gönderilemedi.");
-                resetSubmitBtn();
-              }
+              showNotification(`${amt.toFixed(2)} {{ store.currency | default: 'TRY' }} başarıyla ${currentSelectedUser.username} adlı kullanıcıya gönderildi!`, false);
+              setTimeout(() => window.location.reload(), 2000);
             } else {
-              const res = await fetch(`/api/storefront/chest/me/gift/${currentSelectedUser.id}/${currentSelectedChestItemId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-              });
+              await window.crafter.chest.giftItem(currentSelectedUser.id, currentSelectedChestItemId);
               
-              const data = await res.json();
-              if (res.ok && data.success) {
-                showNotification(`Eşya başarıyla hediye edildi!`, false);
-                setTimeout(() => window.location.reload(), 2000);
-              } else {
-                showNotification(data.message || "Hediye gönderilemedi.");
-                resetSubmitBtn();
-              }
+              showNotification(`Eşya başarıyla hediye edildi!`, false);
+              setTimeout(() => window.location.reload(), 2000);
             }
           } catch(err) {
-            showNotification("Beklenmeyen bir sunucu hatası oluştu. Lütfen tekrar deneyin.");
+            showNotification(err.message || "Hediye gönderilemedi.");
             resetSubmitBtn();
           }
         });
@@ -554,6 +534,20 @@
           submitLoading.classList.add('hidden');
           submitText.textContent = "Hediyeyi Gönder";
           updateSubmitButtonState();
+        }
+
+        // Reactive Crafter SDK Event Bus Listeners
+        if (window.crafter) {
+          window.crafter.on('balance:sent', () => {
+            amountInput.value = '';
+            resetSubmitBtn();
+          });
+          window.crafter.on('chest:item_gifted', (data) => {
+            const btn = document.querySelector(`[data-item-id="${data?.itemId}"]`);
+            if (btn) btn.remove();
+            currentSelectedChestItemId = null;
+            resetSubmitBtn();
+          });
         }
 
       });

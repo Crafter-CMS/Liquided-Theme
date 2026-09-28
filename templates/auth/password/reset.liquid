@@ -181,15 +181,9 @@
     btn.innerHTML = '<span class="animate-pulse">Güncelleniyor...</span>';
 
     try {
-      const res = await fetch('/api/storefront/v2/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      const result = await res.json();
-
-      if (result.success) {
-        showToast('Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz.', 'success');
+      const result = await window.crafter.auth.resetPassword(data);
+      if (result.success || result) {
+        showToast(result.message || 'Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz.', 'success');
         setTimeout(() => {
           window.location.href = '/auth';
         }, 2000);
@@ -197,7 +191,7 @@
         showToast(result.message || 'Bir hata oluştu!', 'error');
       }
     } catch (err) {
-      showToast('Bağlantı hatası!', 'error');
+      showToast(err.message || 'Bağlantı hatası!', 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalText;

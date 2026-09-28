@@ -236,24 +236,12 @@
       `;
 
       try {
-        const res = await fetch(`/api/storefront/staff-forms/${formId}/apply`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ values })
-        });
-        
-        const data = await res.json();
-        
-        if (res.ok && !data.error) {
-          boxSuccess.classList.remove('hidden');
-          boxSuccess.classList.add('flex');
-        } else {
-          boxError.classList.remove('hidden');
-          textError.innerText = data.message || data.error || 'Başvuru gönderilirken bir hata oluştu.';
-        }
+        await window.crafter.staffForms.apply(formId, values);
+        boxSuccess.classList.remove('hidden');
+        boxSuccess.classList.add('flex');
       } catch (err) {
         boxError.classList.remove('hidden');
-        textError.innerText = 'Sunucuyla bağlantı kurulamadı.';
+        textError.innerText = err.message || 'Başvuru gönderilirken bir hata oluştu.';
       } finally {
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = `

@@ -152,21 +152,15 @@
     btn.innerHTML = '<span class="animate-pulse">Gönderiliyor...</span>';
 
     try {
-      const res = await fetch('/api/storefront/v2/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      const result = await res.json();
-
-      if (result.success) {
-        showToast('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.', 'success');
+      const result = await window.crafter.auth.forgotPassword(data.email, data.turnstileToken);
+      if (result.success || result) {
+        showToast(result.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.', 'success');
         e.target.reset();
       } else {
         showToast(result.message || 'Bir hata oluştu!', 'error');
       }
     } catch (err) {
-      showToast('Bağlantı hatası!', 'error');
+      showToast(err.message || 'Bağlantı hatası!', 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalText;

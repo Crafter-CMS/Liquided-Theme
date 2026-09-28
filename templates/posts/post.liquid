@@ -139,30 +139,25 @@
           }
 
           try {
-            // Backend'e İsteği Gönder (Proxy üzerinden)
-            const response = await fetch(`/api/storefront/v2/posts/${postId}/like`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            });
-
-            const result = await response.json();
-            
-            if (!result.success) {
-              // Revert if failed
-              showToast('İşlem başarısız oldu: ' + (result.message || 'Bilinmeyen hata'), 'error');
-              setTimeout(() => window.location.reload(), 1500);
-            }
+            await window.crafter.posts.like(postId);
           } catch (err) {
             console.error('Like error:', err);
-            showToast('Bağlantı hatası oluştu!', 'error');
+            showToast('İşlem başarısız oldu: ' + (err.message || 'Bilinmeyen hata'), 'error');
             setTimeout(() => window.location.reload(), 1500);
           }
         {% else %}
           // Giriş yapmamışsa yönlendir
           window.location.href = '/auth';
         {% endif %}
+      });
+    }
+
+    if (window.crafter) {
+      window.crafter.on('post:liked', (res) => {
+        const count = res?.likeCount ?? res?.data?.likeCount;
+        if (count !== undefined && likeCountText) {
+          likeCountText.innerText = count + ' Beğeni';
+        }
       });
     }
   });

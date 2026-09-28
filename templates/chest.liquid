@@ -52,9 +52,9 @@
         {% else %}
           <div id="chest-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for item in chestItems %}
-              <div class="relative bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col h-full {% if item.used %}opacity-60 bg-gray-50{% endif %}">
+              <div id="chest-item-{{ item.id }}" data-chest-item-id="{{ item.id }}" class="relative bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col h-full {% if item.used %}opacity-60 bg-gray-50{% endif %}">
                 {% if item.used %}
-                  <div class="absolute top-4 left-4 z-10 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm">
+                  <div class="used-badge absolute top-4 left-4 z-10 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm">
                     Kullanılmış
                   </div>
                 {% endif %}
@@ -126,7 +126,7 @@
             <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex items-center justify-between">
               <div>
                 <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Kullanılabilir</p>
-                <p class="text-2xl font-black text-emerald-900">{{ available }}</p>
+                <p id="stat-available" class="text-2xl font-black text-emerald-900">{{ available }}</p>
               </div>
               <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +138,7 @@
             <div class="bg-gray-50/50 border border-gray-200/60 rounded-2xl p-4 flex items-center justify-between">
               <div>
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kullanılmış</p>
-                <p class="text-2xl font-black text-gray-900">{{ used }}</p>
+                <p id="stat-used" class="text-2xl font-black text-gray-900">{{ used }}</p>
               </div>
               <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,6 +153,44 @@
     <script>
       const customerId = '{{ customer.id | default: customer._id }}';
       let useTimeouts = {};
+
+      // Reactive Event Bus Listener for chest item usage
+      if (window.crafter) {
+        window.crafter.on('chest:item_used', ({ itemId }) => {
+          const itemCard = document.getElementById(`chest-item-${itemId}`) || document.querySelector(`[data-chest-item-id="${itemId}"]`);
+          if (itemCard) {
+            itemCard.classList.add('opacity-60', 'bg-gray-50');
+            const img = itemCard.querySelector('img');
+            if (img) img.classList.add('grayscale');
+
+            const btnContainer = itemCard.querySelector('.mt-auto.pt-4');
+            if (btnContainer) {
+              btnContainer.innerHTML = `
+                <button disabled class="w-full bg-gray-200 text-gray-500 font-bold rounded-xl py-3 cursor-not-allowed">
+                  Kullanılmış
+                </button>
+              `;
+            }
+
+            if (!itemCard.querySelector('.used-badge')) {
+              const badge = document.createElement('div');
+              badge.className = 'used-badge absolute top-4 left-4 z-10 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm';
+              badge.innerText = 'Kullanılmış';
+              itemCard.prepend(badge);
+            }
+          }
+
+          // Update sidebar stats
+          const statAvail = document.getElementById('stat-available');
+          const statUsed = document.getElementById('stat-used');
+          if (statAvail && statUsed) {
+            const curAvail = parseInt(statAvail.innerText) || 0;
+            const curUsed = parseInt(statUsed.innerText) || 0;
+            statAvail.innerText = Math.max(0, curAvail - 1);
+            statUsed.innerText = curUsed + 1;
+          }
+        });
+      }
 
       async function useItem(itemId, btn) {
         if (!btn.classList.contains('confirm-mode')) {
@@ -175,16 +213,10 @@
         btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Kullanılıyor...`;
 
         try {
-          const res = await fetch(`/api/storefront/v1/chest/${customerId}/use/${itemId}`, { method: 'POST' });
-          const data = await res.json();
-          if (res.ok || data.success) {
-            window.showToast?.('Eşya başarıyla kullanıldı!', 'success');
-            setTimeout(() => location.reload(), 1500); // Reload to show used status
-          } else {
-            throw new Error(data.message || 'Kullanım hatası');
-          }
+          await window.crafter.chest.useItem(itemId, customerId);
+          window.showToast?.('Eşya başarıyla kullanıldı!', 'success');
         } catch (e) {
-          window.showToast?.(e.message, 'error');
+          window.showToast?.(e.message || 'Kullanım hatası', 'error');
           btn.disabled = false;
           btn.classList.remove('confirm-mode', 'bg-orange-500', 'hover:bg-orange-600', 'shadow-orange-500/30');
           btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600', 'shadow-emerald-500/30');

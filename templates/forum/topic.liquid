@@ -345,23 +345,11 @@
       const topicId = '{{ forumTopic.id }}';
 
       try {
-        const res = await fetch(`/api/storefront/v1/forum/topic/${topicId}/message`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: window.lexicalContentJSON }),
-        });
-        const result = await res.json();
-
-        if (result.success || res.ok) {
-          window.showToast?.('Cevabınız gönderildi!', 'success');
-          window.location.reload();
-        } else {
-          window.showToast?.(result.message || 'Bir hata oluştu.', 'error');
-          btn.disabled = false;
-          btn.innerHTML = originalText;
-        }
+        await window.crafter.forum.addMessage(topicId, window.lexicalContentJSON);
+        window.showToast?.('Cevabınız gönderildi!', 'success');
+        window.location.reload();
       } catch (err) {
-        window.showToast?.('Bağlantı hatası.', 'error');
+        window.showToast?.(err.message || 'Bağlantı hatası.', 'error');
         btn.disabled = false;
         btn.innerHTML = originalText;
       }

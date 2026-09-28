@@ -175,37 +175,23 @@
         İşleniyor...
       `;
 
-      try {
-        const res = await fetch('/api/storefront/config/vote-providers/vote', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ providerId })
-        });
-        
-        const data = await res.json();
-        
-        if (res.ok && !data.error && data.status !== false) {
-          boxSuccess.classList.remove('hidden');
-          if (data.message) {
-            textSuccess.innerText = data.message;
-          }
-          // Redirect to the URL or reload after 2s
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        } else {
-          boxError.classList.remove('hidden');
-          textError.innerText = data.message || data.error || 'Oy gönderilirken bir hata oluştu.';
-          
-          btnSubmit.disabled = false;
-          btnSubmit.innerHTML = `
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Tekrar Dene
-          `;
+      window.crafter?.on('vote:success', ({ providerId: votedId, response }) => {
+        boxSuccess.classList.remove('hidden');
+        if (response?.message) {
+          textSuccess.innerText = response.message;
         }
+        window.showToast?.(response?.message || 'Oyunuz başarıyla kaydedildi!', 'success');
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      });
+
+      try {
+        await window.crafter.vote.vote(providerId);
       } catch (err) {
         boxError.classList.remove('hidden');
-        textError.innerText = 'Sunucuyla bağlantı kurulamadı.';
+        textError.innerText = err.message || 'Oy gönderilirken bir hata oluştu.';
+        
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = `
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

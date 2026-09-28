@@ -355,8 +355,11 @@
 
                     {% if customer.role.permissions and customer.role.permissions.size > 0 %}
                       <a
-                        href="https://app.crafter.net.tr/cms/auth?websiteId={{ customer.websiteId }}&accessToken={{ customer.access_token }}&refreshToken={{ customer.refresh_token }}"
-                        class="col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors text-center border border-purple-100"
+                        href="https://app.crafter.net.tr/cms/auth?websiteId={{ customer.websiteId }}"
+                        data-website-id="{{ customer.websiteId }}"
+                        target="_blank"
+                        onclick="return window.openCmsPanel('{{ customer.websiteId }}', event);"
+                        class="cms-admin-link col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors text-center border border-purple-100"
                       >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
@@ -1117,6 +1120,102 @@
       window.addEventListener('storage', (e) => {
         if (e.key === 'cart') updateGlobalCartBadge();
       });
+
+      // Cookie Helper & Crafter CMS Auth Bridge
+      window.getCrafterCookie = function(name) {
+        try {
+          const parts = (document.cookie || '').split(';');
+          for (let i = 0; i < parts.length; i++) {
+            const item = parts[i].trim();
+            if (item.indexOf(name + '=') === 0) {
+              return item.substring(name.length + 1);
+            }
+          }
+        } catch (e) {}
+        try {
+          const ls = localStorage.getItem(name);
+          if (ls) return ls;
+        } catch (e) {}
+        if (name === 'crafter_token' && window.crafter && typeof window.crafter.getToken === 'function') {
+          return window.crafter.getToken() || '';
+        }
+        return '';
+      };
+
+      window.openCmsPanel = function(websiteId, e) {
+        if (e) {
+          if (e.preventDefault) e.preventDefault();
+          if (e.stopPropagation) e.stopPropagation();
+        }
+        const token = window.getCrafterCookie('crafter_token');
+        const refreshToken = window.getCrafterCookie('crafter_refresh_token');
+        const wid = websiteId || '{{ customer.websiteId }}';
+        const url = 'https://app.crafter.net.tr/cms/auth?websiteId=' + encodeURIComponent(wid) + '&accessToken=' + encodeURIComponent(token) + '&refreshToken=' + encodeURIComponent(refreshToken);
+        window.open(url, '_blank');
+        return false;
+      };
+
+      window.updateCmsAuthLinks = function() {
+        const token = window.getCrafterCookie('crafter_token');
+        const refreshToken = window.getCrafterCookie('crafter_refresh_token');
+        document.querySelectorAll('a.cms-admin-link').forEach((link) => {
+          const wid = link.getAttribute('data-website-id') || '{{ customer.websiteId }}';
+          link.href = 'https://app.crafter.net.tr/cms/auth?websiteId=' + encodeURIComponent(wid) + '&accessToken=' + encodeURIComponent(token) + '&refreshToken=' + encodeURIComponent(refreshToken);
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.updateCmsAuthLinks);
+      } else {
+        window.updateCmsAuthLinks();
+      }
+
+      if (window.crafter) {
+        async function syncHeaderBalance() {
+          try {
+            {% if customer %}
+            const data = await window.crafter.users.getBalance('me');
+            if (data && data.balance !== undefined) {
+              document.querySelectorAll('#nav-credit, .header-balance').forEach(el => {
+                el.innerText = `${data.balance} ${data.currency || '₺'}`;
+              });
+            }
+            {% endif %}
+          } catch (e) {}
+        }
+
+        window.crafter.on('cart:purchased', async (order) => {
+          localStorage.removeItem('cart');
+          updateGlobalCartBadge();
+          await syncHeaderBalance();
+        });
+
+        window.crafter.on('balance:sent', async () => {
+          await syncHeaderBalance();
+        });
+
+        window.crafter.on('redeem:used', async (res) => {
+          if (res?.bonus) {
+            await syncHeaderBalance();
+          }
+        });
+
+        window.crafter.on('auth:logout', () => {
+          window.location.reload();
+        });
+
+        window.crafter.on('2fa:enabled', (data) => {
+          window.showToast?.(`İki aşamalı doğrulama (${data?.method || '2FA'}) aktifleştirildi.`, 'success');
+        });
+
+        window.crafter.on('2fa:disabled', () => {
+          window.showToast?.('İki aşamalı doğrulama devre dışı bırakıldı.', 'info');
+        });
+
+        window.crafter.on('discord:unlinked', () => {
+          window.showToast?.('Discord bağlantısı kaldırıldı.', 'info');
+        });
+      }
     </script>
 
     {% if settings.integrations.tawk_to_id != blank %}

@@ -427,11 +427,9 @@
     btn.innerHTML = '...';
 
     try {
-      const res = await fetch(`/api/storefront/v1/coupons/${code}`);
-      const data = await res.json().catch(() => ({}));
-      
-      const c = data.data || (data.code || data.id ? data : null);
-      if (res.ok && c && data.success !== false) {
+      const data = await window.crafter.coupons.get(code);
+      const c = data?.data || (data?.code || data?.id ? data : null);
+      if (c) {
         if (!c.isActive) {
           window.showToast?.('Kupon artık aktif değil.', 'error');
           return;
@@ -464,10 +462,10 @@
         renderCart();
         window.showToast?.('Kupon uygulandı!', 'success');
       } else {
-        window.showToast?.(data.message || 'Geçersiz kupon kodu.', 'error');
+        window.showToast?.('Geçersiz kupon kodu.', 'error');
       }
     } catch (e) {
-      window.showToast?.('Kupon kontrol edilemedi.', 'error');
+      window.showToast?.(e.message || 'Kupon kontrol edilemedi.', 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = ogText;
@@ -514,33 +512,32 @@
     btn.innerHTML = '<svg class="w-5 h-5 animate-spin mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> İşleniyor...';
 
     try {
-      const productIds = cartProducts.map(p => p.id);
-      const payload = { productIds };
+      const items = cartProducts.map(p => ({ productId: p.id, quantity: p.quantity }));
+      const payload = { items };
       if (appliedCoupon) payload.coupon = appliedCoupon.code;
 
-      const res = await fetch('/api/storefront/v1/marketplace/purchase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
+      const data = await window.crafter.cart.purchase(payload);
 
-      if (data.success || res.ok) {
-        window.showToast?.('Sipariş başarıyla tamamlandı! Sandığa yönlendiriliyorsunuz.', 'success');
-        localStorage.removeItem('cart');
-        setTimeout(() => {
-          window.location.href = '/chest';
-        }, 2000);
-      } else {
-        window.showToast?.(data.message || 'Sipariş tamamlanamadı.', 'error');
-        btn.disabled = false;
-        btn.innerHTML = ogText;
-      }
+      window.showToast?.('Sipariş başarıyla tamamlandı! Sandığa yönlendiriliyorsunuz.', 'success');
+      localStorage.removeItem('cart');
+      setTimeout(() => {
+        window.location.href = '/chest';
+      }, 2000);
     } catch (e) {
-      window.showToast?.('Bağlantı hatası.', 'error');
+      window.showToast?.(e.message || 'Sipariş tamamlanamadı.', 'error');
       btn.disabled = false;
       btn.innerHTML = ogText;
     }
+  }
+
+  if (window.crafter) {
+    window.crafter.on('cart:purchased', () => {
+      localStorage.removeItem('cart');
+      cartProducts = [];
+      appliedCoupon = null;
+      updateGlobalCartBadge?.();
+      loadCart();
+    });
   }
 
   document.addEventListener('DOMContentLoaded', loadCart);

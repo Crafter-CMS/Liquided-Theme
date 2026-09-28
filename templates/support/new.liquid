@@ -314,23 +314,11 @@
         };
 
         try {
-          const res = await fetch('/api/storefront/v2/tickets', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          });
-          const result = await res.json();
-
-          if (result.success || res.ok) {
-            window.showToast?.('Destek talebiniz başarıyla oluşturuldu!', 'success');
-            window.location.href = '/support';
-          } else {
-            window.showToast?.(result.message || 'Bir hata oluştu.', 'error');
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-          }
+          await window.crafter.tickets.create(data);
+          window.showToast?.('Destek talebiniz başarıyla oluşturuldu!', 'success');
+          window.location.href = '/support';
         } catch (err) {
-          window.showToast?.('Bağlantı hatası.', 'error');
+          window.showToast?.(err.message || 'Bir hata oluştu.', 'error');
           btn.disabled = false;
           btn.innerHTML = originalText;
         }
