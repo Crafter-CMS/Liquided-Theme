@@ -56,6 +56,12 @@
     <!-- NProgress for smooth page transitions -->
     <link rel="stylesheet" href="https://unpkg.com/nprogress@0.2.0/nprogress.css">
     <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+
+    <!-- Crafter CMS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@crafter-cms/sdk@1.0.1/dist/crafter.min.js"></script>
+    <script>
+      window.crafter = new Crafter();
+    </script>
     <style>
       #nprogress .bar {
         background: var(--color-primary) !important;
@@ -1005,11 +1011,13 @@
       
       async function logoutAccount() {
         try {
-          await fetch('/api/storefront/v2/auth/logout', { method: 'POST' });
-          window.location.reload();
-        } catch (err) {
-          window.location.reload();
-        }
+          if (window.crafter?.auth) {
+            await window.crafter.auth.logout();
+          } else {
+            await fetch('/api/storefront/v2/auth/logout', { method: 'POST' });
+          }
+        } catch (err) {}
+        window.location.reload();
       }
       
       document.addEventListener('click', e => {
@@ -1040,10 +1048,15 @@
       {% endif %}
 
       // MCAPI.TR Minecraft Server Status Fetcher
-      const serverIp = '{{ settings.server_ip | default: "mc.hypixel.net" }}';
-      if (serverIp) {
+      // Kept inside a function so `serverIp` is not a page-global lexical binding.
+      // Classic scripts share one global lexical scope; a second top-level
+      // `const serverIp` (for example on /auth) is a SyntaxError and drops the whole script.
+      (function () {
+        const serverIp = '{{ settings.server_ip | default: "mc.hypixel.net" }}';
+        if (!serverIp) return;
+
         const countEl = document.getElementById('server-player-count');
-        
+
         async function fetchServerStatus() {
           try {
             const res = await fetch(`https://mcapi.tr/api/v1/status/${serverIp}`);
@@ -1076,8 +1089,13 @@
               countEl.textContent = 'BAKIMDA VEYA KAPALI';
             }
           }
+          const authCountEl = document.getElementById('auth-online-count');
+          if (authCountEl) {
+            authCountEl.classList.remove('animate-pulse');
+            authCountEl.textContent = online !== null ? String(online) : '?';
+          }
         });
-      }
+      })();
     </script>
     <script>
       function updateGlobalCartBadge() {
