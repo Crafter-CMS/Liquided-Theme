@@ -28,7 +28,10 @@
             </svg>
             Eşyalarım
           </h2>
-          <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-lg text-sm">{{- total }} Eşya</span>
+          <div class="flex items-center gap-4">
+            <a href="/licenses" class="text-sm font-bold text-primary">Lisanslar</a>
+            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-lg text-sm">{{- total }} Eşya</span>
+          </div>
         </div>
 
         {% if total == 0 %}

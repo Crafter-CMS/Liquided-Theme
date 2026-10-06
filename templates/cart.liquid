@@ -10,12 +10,7 @@
     <span class="text-gray-900">Sepetim</span>
   </div>
 
-  <div id="cart-loading" class="flex flex-col items-center justify-center py-20">
-    <svg class="w-12 h-12 text-primary animate-spin mb-4" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-    <div class="font-bold text-gray-500">Sepetiniz yükleniyor...</div>
-  </div>
+  <div id="cart-loading" class="hidden"></div>
 
   <div
     id="cart-empty"
@@ -155,7 +150,14 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
-          Siparişi Tamamla
+          Bakiyeyle Öde
+        </button>
+        <button
+          onclick="checkoutCard()"
+          id="cardPayBtn"
+          class="w-full mt-3 bg-gray-900 text-white font-bold rounded-xl px-8 py-4 hover:bg-gray-800 transition-all flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Kartla Öde
         </button>
       </div>
     </div>
@@ -166,6 +168,11 @@
   // Marketplace Settings injected from server
   const bulkDiscount = {{ marketplace.bulkDiscount | json | default: 'null' }};
   const isCustomer = {% if customer %}true{% else %}false{% endif %};
+  const checkoutCustomer = {% if customer %}{
+    websiteId: {{ customer.websiteId | json }},
+    username: {{ customer.username | json }},
+    email: {{ customer.email | json }}
+  }{% else %}null{% endif %};
   
   let cartProducts = [];
   let appliedCoupon = null;
@@ -490,7 +497,7 @@
     if (cartProducts.length === 0) return;
 
     const btn = document.getElementById('purchaseBtn');
-    const ogText = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Siparişi Tamamla';
+    const ogText = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Bakiyeyle Öde';
 
     if (!btn.classList.contains('confirm-mode')) {
       btn.classList.add('confirm-mode', 'bg-green-600');
@@ -538,6 +545,20 @@
       updateGlobalCartBadge?.();
       loadCart();
     });
+  }
+
+  function checkoutCard() {
+    if (!isCustomer) {
+      window.location.href = '/auth/sign-in?return=' + encodeURIComponent('/checkout?purpose=cart');
+      return;
+    }
+    if (cartProducts.length === 0) return;
+    if (appliedCoupon?.code) {
+      localStorage.setItem('crafter_cart_coupon', appliedCoupon.code);
+    } else {
+      localStorage.removeItem('crafter_cart_coupon');
+    }
+    window.location.href = '/checkout?purpose=cart';
   }
 
   document.addEventListener('DOMContentLoaded', loadCart);

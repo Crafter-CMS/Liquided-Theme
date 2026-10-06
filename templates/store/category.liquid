@@ -37,7 +37,36 @@
       {% endif %}
     </div>
   </div>
+  <form method="get" class="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
+    <div class="grid gap-4 md:grid-cols-[220px_1fr_auto] md:items-end">
+      <label class="block text-sm font-bold text-gray-900">Fiyat aralığı
+        <span class="mt-2 flex items-center gap-2 font-medium text-gray-500">
+          <input name="priceMin" type="number" min="0" value="{{ request.searchParams.priceMin }}" placeholder="{{ catalog_filters.price.min }}" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-gray-900">
+          <span>-</span>
+          <input name="priceMax" type="number" min="0" value="{{ request.searchParams.priceMax }}" placeholder="{{ catalog_filters.price.max }}" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-gray-900">
+        </span>
+      </label>
+      <div>
+        <p class="text-sm font-bold text-gray-900 mb-2">Kategori</p>
+        <div class="flex flex-wrap gap-3">
+          {% for item in catalog_filters.categories %}
+            <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <input type="checkbox" name="category" value="{{ item.id }}" class="rounded border-gray-300" {% if request.searchParams.category contains item.id %}checked{% elsif request.searchParams.category == blank and item.id == category.id %}checked{% endif %}>
+              {{ item.label }} <span class="text-gray-400">({{ item.count }})</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+      <label class="flex items-center gap-2 text-sm font-bold text-gray-900 pb-2">
+        <input type="checkbox" name="available" value="true" class="rounded border-gray-300" {% if request.searchParams.available == 'true' %}checked{% endif %}>
+        Stokta olanlar
+      </label>
+    </div>
+    <button type="submit" class="mt-4 bg-primary text-white font-bold rounded-xl px-5 py-2">Uygula</button>
+  </form>
+
   <!-- ÜRÜNLER -->
+  <div id="catalog-source">
   {% if products.size > 0 %}
     <!--
       ============================================================
@@ -310,6 +339,6 @@
       </a>
     </div>
   {% endif %}
+  </div>
 </div>
-
 

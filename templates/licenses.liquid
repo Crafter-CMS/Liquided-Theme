@@ -1,0 +1,79 @@
+<div class="container max-w-[1000px] mx-auto px-4 mt-8 mb-24 space-y-8 min-h-[50vh]">
+  <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
+    <a href="/store" class="hover:text-primary transition-colors">Mağaza</a>
+    <span>/</span>
+    <span class="text-gray-900">Lisanslarım</span>
+  </div>
+
+  {% if customer %}
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+      <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+        <h1 class="text-2xl font-black text-gray-900">Lisanslarım</h1>
+        <a href="/chest" class="text-sm font-bold text-primary">Sandığa git</a>
+      </div>
+      {% if licenses == blank or licenses.size == 0 %}
+        <div class="text-center py-12">
+          <h2 class="text-xl font-black text-gray-900 mb-2">Henüz lisansınız yok</h2>
+          <p class="text-gray-500 font-medium mb-6">Satın alınan dijital kodlar ve dosyalar burada görünür.</p>
+          <a href="/store" class="inline-flex bg-primary text-white font-bold rounded-xl px-6 py-3">Mağazaya git</a>
+        </div>
+      {% else %}
+        <div id="license-list" class="space-y-4">
+          {% for license in licenses %}
+            <article class="border border-gray-100 rounded-2xl p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h2 class="font-black text-gray-900">{{ license.productName | default: 'Ürün' }}</h2>
+                  <p class="text-xs font-bold text-gray-400 mt-1">
+                    {% if license.type == 'digital' %}Dijital kod{% elsif license.type == 'downloadable' %}İndirilebilir dosya{% else %}Oyun içi{% endif %}
+                  </p>
+                </div>
+                <span class="text-xs font-bold {% if license.status == 'active' %}text-emerald-600{% else %}text-gray-400{% endif %}">
+                  {% if license.status == 'active' %}Aktif{% else %}{{ license.status }}{% endif %}
+                </span>
+              </div>
+              {% if license.code %}
+                <div class="mt-3">
+                  <div class="text-xs font-bold text-gray-400 mb-1">Kod</div>
+                  <div class="flex items-center gap-2">
+                    <code class="font-black text-gray-900 break-all">{{ license.code }}</code>
+                    <button type="button" class="license-copy text-xs font-bold text-primary" data-value="{{ license.code | escape }}">Kopyala</button>
+                  </div>
+                </div>
+              {% endif %}
+              {% if license.hasDownload or license.type == 'downloadable' %}
+                <button type="button" class="license-download inline-flex mt-3 font-bold text-white bg-primary rounded-xl px-4 py-2" data-id="{{ license.id }}">Dosyayı indir</button>
+              {% endif %}
+              <div class="mt-3 text-xs text-gray-400 break-all">Anahtar: {{ license.key }}</div>
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <script>
+      document.querySelectorAll('.license-copy').forEach((button) => {
+        button.addEventListener('click', () => {
+          navigator.clipboard.writeText(button.dataset.value || '').then(() => {
+            const previous = button.textContent;
+            button.textContent = 'Kopyalandı';
+            setTimeout(() => { button.textContent = previous; }, 1200);
+          });
+        });
+      });
+      document.querySelectorAll('.license-download').forEach((button) => {
+        button.addEventListener('click', async () => {
+          try {
+            const client = window.crafter;
+            const payload = await client.http.get('/marketplace/licenses/' + button.dataset.id + '/download');
+            const url = payload && (payload.url || (payload.data && payload.data.url));
+            if (url) window.location.href = url;
+          } catch (error) {
+            window.showToast?.(error.message || 'Dosya indirilemedi.', 'error');
+          }
+        });
+      });
+    </script>
+  {% else %}
+    <script>window.location.href = '/auth/sign-in?return=' + encodeURIComponent('/licenses');</script>
+  {% endif %}
+</div>
