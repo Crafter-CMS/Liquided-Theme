@@ -1,76 +1,86 @@
-<div class="container max-w-[1000px] mx-auto px-4 mt-8 mb-24 space-y-8 min-h-[50vh]">
-  <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
-    <a href="/store" class="hover:text-primary transition-colors">Mağaza</a>
+<div class="container max-w-[860px] mx-auto px-4 mt-8 mb-24 space-y-8">
+  <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500">
+    <a href="/store" class="hover:text-primary">Mağaza</a>
     <span>/</span>
-    <span class="text-gray-900">Lisanslarım</span>
+    <span class="text-gray-900">Lisanslar</span>
   </div>
 
   {% if customer %}
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-      <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-        <h1 class="text-2xl font-black text-gray-900">Lisanslarım</h1>
-        <a href="/chest" class="text-sm font-bold text-primary">Sandığa git</a>
+    <div class="bg-white border border-gray-100 rounded-[2rem] p-6 md:p-8">
+      <div class="flex items-end justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-3xl font-black text-gray-900">Lisanslarım</h1>
+          <p class="text-gray-500 mt-1">Dijital kodlar burada. İndirme bağlantısı kısa sürelidir.</p>
+        </div>
+        <a href="/store" class="text-sm font-bold text-primary">Mağazaya dön</a>
       </div>
-      {% if licenses == blank or licenses.size == 0 %}
-        <div class="text-center py-12">
-          <h2 class="text-xl font-black text-gray-900 mb-2">Henüz lisansınız yok</h2>
-          <p class="text-gray-500 font-medium mb-6">Satın alınan dijital kodlar ve dosyalar burada görünür.</p>
-          <a href="/store" class="inline-flex bg-primary text-white font-bold rounded-xl px-6 py-3">Mağazaya git</a>
-        </div>
-      {% else %}
-        <div id="license-list" class="space-y-4">
-          {% for license in licenses %}
-            <article class="border border-gray-100 rounded-2xl p-5">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <h2 class="font-black text-gray-900">{{ license.productName | default: 'Ürün' }}</h2>
-                  <p class="text-xs font-bold text-gray-400 mt-1">
-                    {% if license.type == 'digital' %}Dijital kod{% elsif license.type == 'downloadable' %}İndirilebilir dosya{% else %}Oyun içi{% endif %}
-                  </p>
-                </div>
-                <span class="text-xs font-bold {% if license.status == 'active' %}text-emerald-600{% else %}text-gray-400{% endif %}">
-                  {% if license.status == 'active' %}Aktif{% else %}{{ license.status }}{% endif %}
-                </span>
-              </div>
-              {% if license.code %}
-                <div class="mt-3">
-                  <div class="text-xs font-bold text-gray-400 mb-1">Kod</div>
-                  <div class="flex items-center gap-2">
-                    <code class="font-black text-gray-900 break-all">{{ license.code }}</code>
-                    <button type="button" class="license-copy text-xs font-bold text-primary" data-value="{{ license.code | escape }}">Kopyala</button>
-                  </div>
-                </div>
-              {% endif %}
-              {% if license.hasDownload or license.type == 'downloadable' %}
-                <button type="button" class="license-download inline-flex mt-3 font-bold text-white bg-primary rounded-xl px-4 py-2" data-id="{{ license.id }}">Dosyayı indir</button>
-              {% endif %}
-              <div class="mt-3 text-xs text-gray-400 break-all">Anahtar: {{ license.key }}</div>
-            </article>
-          {% endfor %}
-        </div>
-      {% endif %}
+      <div id="license-list" class="space-y-3"></div>
     </div>
+
+    <form id="license-verify" class="bg-white border border-gray-100 rounded-[2rem] p-6 flex flex-col sm:flex-row gap-3">
+      <input name="key" required placeholder="Lisans anahtarı" class="flex-1 rounded-xl border border-gray-200 px-4 py-3">
+      <button class="bg-gray-900 text-white font-bold rounded-xl px-5 py-3" type="submit">Doğrula</button>
+    </form>
+    <p id="license-verify-result" class="text-sm font-bold text-gray-500"></p>
+
     <script>
-      document.querySelectorAll('.license-copy').forEach((button) => {
-        button.addEventListener('click', () => {
-          navigator.clipboard.writeText(button.dataset.value || '').then(() => {
-            const previous = button.textContent;
-            button.textContent = 'Kopyalandı';
-            setTimeout(() => { button.textContent = previous; }, 1200);
+      function typeName(type) {
+        return window.CrafterStore ? window.CrafterStore.typeLabel(type || 'in_game') : '';
+      }
+
+      function paintLicenses(licenses) {
+        var root = document.getElementById('license-list');
+        if (!licenses.length) {
+          root.innerHTML = '<div class="rounded-2xl bg-gray-50 p-8 text-center"><h2 class="font-black text-gray-900">Henüz lisans yok</h2><p class="text-gray-500 mt-2">Satın alınan kodlar ve dosyalar burada listelenir.</p></div>';
+          return;
+        }
+        root.innerHTML = licenses.map(function (license) {
+          var code = license.code
+            ? '<div class="mt-3"><div class="text-xs font-bold text-gray-400">Kod</div><code class="font-black text-gray-900 break-all">' + window.CrafterStore.esc(license.code) + '</code></div>'
+            : '';
+          var download = license.hasDownload
+            ? '<button type="button" class="license-download mt-3 bg-primary text-white font-bold rounded-xl px-4 py-2" data-id="' + window.CrafterStore.esc(license.id) + '">Dosyayı indir</button>'
+            : '';
+          return '<article class="border border-gray-100 rounded-2xl p-5">' +
+            '<div class="flex justify-between gap-4"><div><h2 class="font-black text-gray-900">' + window.CrafterStore.esc(license.productName || 'Ürün') + '</h2><p class="text-xs font-bold text-gray-400 mt-1">' + typeName(license.type) + '</p></div><span class="text-xs font-bold text-emerald-600">' + window.CrafterStore.esc(license.status || '') + '</span></div>' +
+            code + download +
+            '<div class="mt-3 text-xs text-gray-400 break-all">Anahtar: ' + window.CrafterStore.esc(license.key || '') + '</div></article>';
+        }).join('');
+        root.querySelectorAll('.license-download').forEach(function (button) {
+          button.addEventListener('click', async function () {
+            try {
+              var file = await window.crafter.licenses.download(button.dataset.id);
+              if (file && file.url) window.location.href = file.url;
+            } catch (error) {
+              window.showToast && window.showToast(error.message || 'Dosya indirilemedi.', 'error');
+            }
           });
         });
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        try {
+          var licenses = await window.crafter.licenses.list();
+          paintLicenses(Array.isArray(licenses) ? licenses : (licenses && licenses.data) || []);
+        } catch (error) {
+          document.getElementById('license-list').innerHTML = '<p class="text-red-500 font-bold">Lisanslar yüklenemedi.</p>';
+        }
       });
-      document.querySelectorAll('.license-download').forEach((button) => {
-        button.addEventListener('click', async () => {
-          try {
-            const client = window.crafter;
-            const payload = await client.http.get('/marketplace/licenses/' + button.dataset.id + '/download');
-            const url = payload && (payload.url || (payload.data && payload.data.url));
-            if (url) window.location.href = url;
-          } catch (error) {
-            window.showToast?.(error.message || 'Dosya indirilemedi.', 'error');
+
+      document.getElementById('license-verify').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var result = document.getElementById('license-verify-result');
+        try {
+          var check = await window.crafter.licenses.verify(event.target.key.value.trim());
+          if (!check || !check.valid) {
+            result.textContent = 'Anahtar geçersiz.';
+            return;
           }
-        });
+          var kind = typeName(check.type) || 'Ürün';
+          result.textContent = 'Geçerli ' + kind + (check.downloadable ? ', dosya indirilebilir.' : '.');
+        } catch (error) {
+          result.textContent = error.message || 'Doğrulanamadı.';
+        }
       });
     </script>
   {% else %}

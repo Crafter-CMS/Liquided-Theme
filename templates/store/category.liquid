@@ -1,6 +1,8 @@
 <!-- STORE > CATEGORY — ÜRÜN LİSTESİ -->
+{% assign label_in_game = settings.store.type_in_game | default: 'Oyuna teslim' %}
+{% assign label_digital = settings.store.type_digital | default: 'Dijital kod' %}
+{% assign label_downloadable = settings.store.type_downloadable | default: 'İndirilebilir' %}
 <div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-12">
-  <!-- Breadcrumb & Geri Dön -->
   <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
     <a href="/store" class="hover:text-primary transition-colors flex items-center gap-2">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,7 +17,6 @@
     <span class="text-gray-900">{{ category.name | default: 'Kategori' }}</span>
   </div>
 
-  <!-- Kategori Karşılama Banner -->
   <div class="w-full bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
     {% if category.image != blank %}
       <div class="shrink-0 relative z-10">
@@ -37,55 +38,19 @@
       {% endif %}
     </div>
   </div>
-  <form method="get" class="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
-    <div class="grid gap-4 md:grid-cols-[220px_1fr_auto] md:items-end">
-      <label class="block text-sm font-bold text-gray-900">Fiyat aralığı
-        <span class="mt-2 flex items-center gap-2 font-medium text-gray-500">
-          <input name="priceMin" type="number" min="0" value="{{ request.searchParams.priceMin }}" placeholder="{{ catalog_filters.price.min }}" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-gray-900">
-          <span>-</span>
-          <input name="priceMax" type="number" min="0" value="{{ request.searchParams.priceMax }}" placeholder="{{ catalog_filters.price.max }}" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-gray-900">
-        </span>
-      </label>
-      <div>
-        <p class="text-sm font-bold text-gray-900 mb-2">Kategori</p>
-        <div class="flex flex-wrap gap-3">
-          {% for item in catalog_filters.categories %}
-            <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <input type="checkbox" name="category" value="{{ item.id }}" class="rounded border-gray-300" {% if request.searchParams.category contains item.id %}checked{% elsif request.searchParams.category == blank and item.id == category.id %}checked{% endif %}>
-              {{ item.label }} <span class="text-gray-400">({{ item.count }})</span>
-            </label>
-          {% endfor %}
-        </div>
-      </div>
-      <label class="flex items-center gap-2 text-sm font-bold text-gray-900 pb-2">
-        <input type="checkbox" name="available" value="true" class="rounded border-gray-300" {% if request.searchParams.available == 'true' %}checked{% endif %}>
-        Stokta olanlar
-      </label>
-    </div>
-    <button type="submit" class="mt-4 bg-primary text-white font-bold rounded-xl px-5 py-2">Uygula</button>
-  </form>
 
-  <!-- ÜRÜNLER -->
-  <div id="catalog-source">
-  {% if products.size > 0 %}
-    <!--
-      ============================================================
-      LİSTE / KARŞILAŞTIRMA TABLOSU FORMATI (Beyaz Premium Tema)
-      ============================================================
-    -->
-    {% if category.type == 'listed_products' %}
+  {% if category.type == 'listed_products' %}
+    {% if products.size > 0 %}
       {% if category.addons and category.addons.size > 0 %}
         <div class="overflow-x-auto w-full pb-4">
           <div style="min-width:760px">
-            <!-- Ürün Kartları (Tablo Başlıkları) -->
             <div class="grid gap-4 mb-4" style="grid-template-columns: 220px repeat({{ products.size }}, 1fr)">
               <div></div>
-              <!-- Sol boşluk (Özellik isimleri için) -->
               {% for product in products %}
                 <div class="bg-white border border-gray-100 rounded-3xl p-5 flex flex-col items-center gap-3 text-center shadow-sm relative hover:border-gray-300 transition-colors">
                   <a
                     href="/store/{{ server.slug }}/{{ category.slug }}/{{ product.slug }}"
-                    class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center p-2 border border-gray-100 mb-2 group-hover:border-primary transition-colors"
+                    class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center p-2 border border-gray-100 mb-2"
                   >
                     {% if product.images and product.images.size > 0 %}
                       <img src="{{ product.images[0] }}" alt="{{ product.name }}" class="w-full h-full object-contain">
@@ -97,40 +62,34 @@
                       </svg>
                     {% endif %}
                   </a>
-
                   <a href="/store/{{ server.slug }}/{{ category.slug }}/{{ product.slug }}">
-                    <h3 class="font-black text-lg text-gray-900 leading-tight hover:text-primary transition-colors">
-                      {{ product.name }}
-                    </h3>
+                    <h3 class="font-black text-lg text-gray-900 leading-tight hover:text-primary transition-colors">{{ product.name }}</h3>
                   </a>
+                  <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    {% assign row_type = product.type | default: 'in_game' %}
+                    {% if row_type == 'digital' %}{{ label_digital }}{% elsif row_type == 'downloadable' %}{{ label_downloadable }}{% else %}{{ label_in_game }}{% endif %}
+                  </div>
                   <p class="text-xs text-gray-500 leading-relaxed line-clamp-3 mb-2">{{ product.description | lexical_text | truncate: 150 }}</p>
-
                   <div class="mt-auto mb-2 flex flex-col items-center justify-center gap-2">
-                    {% if product.stock <= 0 %}
-                      <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
-                        >Stok Sınırsız</span
-                      >
+                    {% assign list_type = product.type | default: 'in_game' %}
+                    {% if list_type == 'in_game' and product.stock <= 0 %}
+                      <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">Stok Sınırsız</span>
+                    {% elsif product.stock <= 0 %}
+                      <span class="bg-gray-50 text-gray-500 border border-gray-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">Tükendi</span>
                     {% elsif product.stock <= 10 %}
-                      <span class="bg-orange-50 text-orange-600 border border-orange-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg animate-pulse"
-                        >Son {{ product.stock }} Adet</span
-                      >
+                      <span class="bg-orange-50 text-orange-600 border border-orange-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">Son {{ product.stock }} Adet</span>
                     {% else %}
-                      <span class="bg-gray-50 text-gray-500 border border-gray-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
-                        >Stok: {{ product.stock -}}
-                      </span>
+                      <span class="bg-gray-50 text-gray-500 border border-gray-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">Stok: {{ product.stock }}</span>
                     {% endif %}
-
                     <div class="flex items-center gap-2 mt-1">
                       {% if product.discountValue and product.discountValue > 0 %}
                         <div class="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm">
-                          -{{ product.discountValue -}}
-                          {%- if product.discountType == 'percentage' %}%{% else %}₺{% endif %} İndirim
+                          -{{ product.discountValue }}{%- if product.discountType == 'percentage' %}%{% else %}₺{% endif %} İndirim
                         </div>
                       {% endif %}
                       <div class="text-2xl font-black text-primary">{{ product.price }} ₺</div>
                     </div>
                   </div>
-
                   <button
                     data-product="{{ product | json | escape }}"
                     onclick="window.addToCart(JSON.parse(this.dataset.product))"
@@ -145,42 +104,27 @@
               {% endfor %}
             </div>
 
-            <!-- Özellikler Tablosu (Beyaz Tema) -->
             <div class="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
               {% for addon in category.addons %}
                 <div>
-                  <!-- Bölüm Başlığı -->
                   <div class="px-6 py-3 bg-gray-50 border-b border-gray-100">
                     <h4 class="font-black text-xs uppercase tracking-widest text-gray-500">{{ addon.title }}</h4>
                   </div>
-
                   {% for feature in addon.features %}
-                    <div
-                      class="grid hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-b-0"
-                      style="grid-template-columns: 220px repeat({{ products.size }}, 1fr);"
-                    >
-                      <!-- Özellik Adı -->
+                    <div class="grid hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-b-0" style="grid-template-columns: 220px repeat({{ products.size }}, 1fr);">
                       <div class="px-6 py-4 flex items-center gap-2 group relative border-r border-gray-100">
                         <span class="text-sm font-bold text-gray-700">{{ feature.title }}</span>
                         {% if feature.info %}
                           <div class="relative">
-                            <svg
-                              class="w-4 h-4 cursor-pointer text-gray-400 hover:text-primary transition-colors"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
+                            <svg class="w-4 h-4 cursor-pointer text-gray-400 hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <!-- Tooltip -->
                             <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-56 p-3 rounded-xl text-xs leading-relaxed opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl bg-gray-900 text-white font-medium">
                               {{ feature.info }}
                             </div>
                           </div>
                         {% endif %}
                       </div>
-
-                      <!-- Ürün Değerleri -->
                       {% for product in products %}
                         {% assign found_addon = null %}
                         {% assign found_feature = null %}
@@ -192,35 +136,20 @@
                             {% if pf.featureId == feature.id %}{% assign found_feature = pf %}{% endif %}
                           {% endfor %}
                         {% endif %}
-
                         <div class="px-5 py-4 flex items-center justify-center border-r border-gray-50 last:border-r-0">
                           {% if found_feature and found_feature.included %}
                             {% if found_feature.customValue and found_feature.customValue != '' %}
-                              <span class="text-sm font-black text-primary px-3 py-1 rounded-lg bg-blue-50">
-                                {{ found_feature.customValue }}
-                              </span>
+                              <span class="text-sm font-black text-primary px-3 py-1 rounded-lg bg-blue-50">{{ found_feature.customValue }}</span>
                             {% else %}
                               <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-500">
-                                <svg
-                                  class="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  stroke-width="3"
-                                >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
                                   <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                 </svg>
                               </div>
                             {% endif %}
                           {% else %}
                             <div class="w-8 h-8 rounded-full flex items-center justify-center text-gray-300">
-                              <svg
-                                class="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                stroke-width="2.5"
-                              >
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                               </svg>
                             </div>
@@ -235,110 +164,20 @@
           </div>
         </div>
       {% endif %}
-
-      <!--
-        ============================================================
-        GRID FORMAT (Standart Kartlar - Beyaz Tema)
-        ============================================================
-      -->
     {% else %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {% for product in products %}
-          <div class="bg-white border border-gray-100 rounded-3xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group relative overflow-hidden">
-            <div class="absolute top-4 left-4 z-10 flex flex-col gap-2 items-start">
-              {% if product.discountValue and product.discountValue > 0 %}
-                <span class="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm w-fit">
-                  -{{ product.discountValue -}}
-                  {%- if product.discountType == 'percentage' %}%{% else %}₺{% endif %} İndirim
-                </span>
-              {% endif %}
-
-              {% if product.stock <= 0 %}
-                <span class="bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm w-fit"
-                  >Stok Sınırsız</span
-                >
-              {% elsif product.stock <= 10 %}
-                <span class="bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm w-fit animate-pulse"
-                  >Son {{ product.stock }} Adet!</span
-                >
-              {% else %}
-                <span class="bg-gray-800 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm w-fit"
-                  >Stok: {{ product.stock -}}
-                </span>
-              {% endif %}
-            </div>
-
-            <a
-              href="/store/{{ server.slug }}/{{ category.slug }}/{{ product.slug }}"
-              class="w-full aspect-square bg-gray-50 rounded-2xl mb-4 flex items-center justify-center border border-gray-100 overflow-hidden relative block"
-            >
-              {% if product.images and product.images.size > 0 %}
-                <img
-                  src="{{ product.images[0] }}"
-                  class="w-3/4 h-3/4 object-contain group-hover:scale-110 transition-transform duration-500"
-                  alt="{{ product.name }}"
-                >
-              {% elsif product.image != blank %}
-                <img
-                  src="{{ product.image }}"
-                  class="w-3/4 h-3/4 object-contain group-hover:scale-110 transition-transform duration-500"
-                  alt="{{ product.name }}"
-                >
-              {% else %}
-                <svg
-                  class="w-20 h-20 text-gray-200 group-hover:scale-110 transition-transform duration-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                </svg>
-              {% endif %}
-
-              <div class="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4 z-10">
-                <button
-                  data-product="{{ product | json | escape }}"
-                  onclick="event.preventDefault(); window.addToCart(JSON.parse(this.dataset.product))"
-                  class="bg-primary hover:bg-blue-600 text-white text-sm font-bold py-2 px-6 rounded-xl transition-colors shadow-lg shadow-primary/30 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
-                >
-                  Sepete Ekle
-                </button>
-              </div>
-            </a>
-
-            <div class="text-center mt-auto">
-              <a href="/store/{{ server.slug }}/{{ category.slug }}/{{ product.slug }}">
-                <h4 class="text-lg font-black text-gray-900 hover:text-primary transition-colors">
-                  {{ product.name }}
-                </h4>
-              </a>
-              <div class="flex items-center justify-center gap-2 mt-2">
-                <span class="text-primary font-black text-xl">{{ product.price }} ₺</span>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
+      <div class="w-full bg-white border border-gray-100 rounded-3xl p-16 text-center shadow-sm">
+        <div class="w-20 h-20 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center mx-auto mb-5 text-4xl shadow-inner">📭</div>
+        <h2 class="text-2xl font-black text-gray-900 mb-2">Bu Kategoride Ürün Yok</h2>
+        <p class="max-w-md mx-auto text-gray-500 font-medium">Henüz satışa sunulmuş ürün bulunmuyor. Lütfen daha sonra tekrar kontrol edin.</p>
+        <a href="/store/{{ server.slug }}" class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-500 bg-gray-50 py-3 px-6 rounded-xl hover:text-primary hover:bg-gray-100 transition-colors border border-gray-100">← {{ server.name }} Kategorilerine Dön</a>
       </div>
     {% endif %}
-
   {% else %}
-    <!-- Ürün Yok (Beyaz Tema) -->
-    <div class="w-full bg-white border border-gray-100 rounded-3xl p-16 text-center shadow-sm">
-      <div class="w-20 h-20 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center mx-auto mb-5 text-4xl shadow-inner">
-        📭
-      </div>
-      <h2 class="text-2xl font-black text-gray-900 mb-2">Bu Kategoride Ürün Yok</h2>
-      <p class="max-w-md mx-auto text-gray-500 font-medium">
-        Henüz satışa sunulmuş ürün bulunmuyor. Lütfen daha sonra tekrar kontrol edin.
-      </p>
-      <a
-        href="/store/{{ server.slug }}"
-        class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-500 bg-gray-50 py-3 px-6 rounded-xl hover:text-primary hover:bg-gray-100 transition-colors border border-gray-100"
-      >
-        ← {{ server.name }} Kategorilerine Dön
-      </a>
-    </div>
+    {% render 'catalog-browser' %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (window.CrafterStore) window.CrafterStore.mountCatalog({ category: {{ category.id | json }}, categorySlug: {{ category.slug | json }} });
+      });
+    </script>
   {% endif %}
-  </div>
 </div>
-

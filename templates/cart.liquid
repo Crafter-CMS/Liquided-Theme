@@ -168,11 +168,6 @@
   // Marketplace Settings injected from server
   const bulkDiscount = {{ marketplace.bulkDiscount | json | default: 'null' }};
   const isCustomer = {% if customer %}true{% else %}false{% endif %};
-  const checkoutCustomer = {% if customer %}{
-    websiteId: {{ customer.websiteId | json }},
-    username: {{ customer.username | json }},
-    email: {{ customer.email | json }}
-  }{% else %}null{% endif %};
   
   let cartProducts = [];
   let appliedCoupon = null;
@@ -185,7 +180,7 @@
         cart = JSON.parse(cartStr);
         // Filtrele: ID'si boş olan hatalı kayıtları temizle
         const originalLength = cart.length;
-        cart = cart.filter(item => item && item.id && item.id.trim() !== '');
+        cart = cart.filter(item => item && item.id && String(item.id).trim() !== '');
         if (cart.length !== originalLength) {
           localStorage.setItem('cart', JSON.stringify(cart));
         }
@@ -313,7 +308,8 @@
             ${imgHtml}
           </div>
           <div class="flex-1 min-w-0">
-            <h3 class="font-bold text-gray-900 truncate"><a href="/store/product/${product.id}" class="hover:text-primary transition-colors">${product.name}</a></h3>
+            <h3 class="font-bold text-gray-900 truncate"><a href="${window.CrafterStore ? window.CrafterStore.productHref(product) : '/store'}" class="hover:text-primary transition-colors">${window.CrafterStore ? window.CrafterStore.esc(product.name) : ''}</a></h3>
+            <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">${window.CrafterStore ? window.CrafterStore.typeLabel(window.CrafterStore.productType(product)) : ''}</div>
             ${priceHtml}
           </div>
           <div class="flex items-center gap-3">
@@ -408,8 +404,7 @@
   }
 
   function saveCart() {
-    const minCart = cartProducts.map(p => ({ id: p.id, quantity: p.quantity }));
-    localStorage.setItem('cart', JSON.stringify(minCart));
+    localStorage.setItem('cart', JSON.stringify(cartProducts));
     updateCartHeaderCount();
   }
 
@@ -525,11 +520,12 @@
 
       const data = await window.crafter.cart.purchase(payload);
 
-      window.showToast?.('Sipariş başarıyla tamamlandı! Sandığa yönlendiriliyorsunuz.', 'success');
+      window.showToast?.('Sipariş tamamlandı.', 'success');
       localStorage.removeItem('cart');
+      const digital = cartProducts.some((product) => product.type && product.type !== 'in_game');
       setTimeout(() => {
-        window.location.href = '/chest';
-      }, 2000);
+        window.location.href = digital ? '/licenses' : '/chest';
+      }, 800);
     } catch (e) {
       window.showToast?.(e.message || 'Sipariş tamamlanamadı.', 'error');
       btn.disabled = false;
@@ -548,17 +544,15 @@
   }
 
   function checkoutCard() {
+    if (cartProducts.length === 0) return;
+    if (appliedCoupon?.code) localStorage.setItem('crafter_cart_coupon', appliedCoupon.code);
+    else localStorage.removeItem('crafter_cart_coupon');
+    var target = '/checkout?purpose=cart';
     if (!isCustomer) {
-      window.location.href = '/auth/sign-in?return=' + encodeURIComponent('/checkout?purpose=cart');
+      window.location.href = '/auth/sign-in?return=' + encodeURIComponent(target);
       return;
     }
-    if (cartProducts.length === 0) return;
-    if (appliedCoupon?.code) {
-      localStorage.setItem('crafter_cart_coupon', appliedCoupon.code);
-    } else {
-      localStorage.removeItem('crafter_cart_coupon');
-    }
-    window.location.href = '/checkout?purpose=cart';
+    window.location.href = target;
   }
 
   document.addEventListener('DOMContentLoaded', loadCart);

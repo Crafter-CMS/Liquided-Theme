@@ -61,7 +61,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@crafter-cms/sdk@1.1.0/dist/crafter.min.js"></script>
     <script>
       window.crafter = new Crafter();
+      window.CRAFTER_WEBSITE_ID = {{ website.id | default: customer.websiteId | json }};
+      window.CRAFTER_TYPE_LABELS = {
+        in_game: {{ settings.store.type_in_game | default: 'Oyuna teslim' | json }},
+        digital: {{ settings.store.type_digital | default: 'Dijital kod' | json }},
+        downloadable: {{ settings.store.type_downloadable | default: 'İndirilebilir' | json }}
+      };
     </script>
+    <script src="{{ 'assets/store.js' | asset_url }}"></script>
     <style>
       #nprogress .bar {
         background: var(--color-primary) !important;
@@ -188,21 +195,52 @@
                   {% if request.path == '/' or request.path == blank %}
                     {% assign is_active = true %}
                   {% endif %}
-                {% elsif request.path contains link.url %}
+                {% elsif link.url != blank and request.path contains link.url %}
                   {% assign is_active = true %}
                 {% endif %}
-                <a
-                  href="{{ link.url }}"
-                  class="h-full flex items-center text-[15px] font-bold transition-all relative group {% if is_active %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
-                  {% if link.new_tab %}
-                    target="_blank"
+                {% if link.children %}
+                  {% for child in link.children %}
+                    {% if child.url != blank and child.url != '/' and request.path contains child.url %}
+                      {% assign is_active = true %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+                <div class="nav-item relative h-full flex items-center group/nav">
+                  <a
+                    href="{{ link.url | default: '#' }}"
+                    class="h-full flex items-center gap-1.5 text-[15px] font-bold transition-all relative {% if is_active %}opacity-100{% else %}opacity-80 hover:opacity-100{% endif %}"
+                    {% if link.new_tab %}
+                      target="_blank"
+                    {% endif %}
+                  >
+                    {{ link.title }}
+                    {% if link.children and link.children.size > 0 %}
+                      <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    {% endif %}
+                    <span
+                      class="absolute bottom-0 left-0 w-full h-[3px] bg-primary transition-transform origin-left {% if is_active %}scale-x-100{% else %}scale-x-0 group-hover/nav:scale-x-100{% endif %}"
+                    ></span>
+                  </a>
+                  {% if link.children and link.children.size > 0 %}
+                    <div class="nav-dropdown absolute left-1/2 top-full z-50 w-56 -translate-x-1/2 pt-3">
+                      <div class="rounded-2xl border border-gray-100 bg-white p-2 text-gray-900 shadow-xl">
+                        {% for child in link.children %}
+                          <a
+                            href="{{ child.url }}"
+                            class="block rounded-xl px-3 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:text-primary"
+                            {% if child.new_tab %}
+                              target="_blank"
+                            {% endif %}
+                          >
+                            {{ child.title }}
+                          </a>
+                        {% endfor %}
+                      </div>
+                    </div>
                   {% endif %}
-                >
-                  {{ link.title }}
-                  <span
-                    class="absolute bottom-0 left-0 w-full h-[3px] bg-primary transition-transform origin-left {% if is_active %}scale-x-100{% else %}scale-x-0 group-hover:scale-x-100{% endif %}"
-                  ></span>
-                </a>
+                </div>
               {% endfor %}
             {% else %}
               <a
@@ -478,18 +516,37 @@
                 {% if request.path == '/' or request.path == blank %}
                   {% assign is_active = true %}
                 {% endif %}
-              {% elsif request.path contains link.url %}
+              {% elsif link.url != blank and request.path contains link.url %}
                 {% assign is_active = true %}
               {% endif %}
-              <a
-                href="{{ link.url }}"
-                class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all {% if is_active %}text-primary bg-primary/5{% endif %}"
-              >
-                <span>{{ link.title }}</span>
-                <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-              </a>
+              {% if link.children and link.children.size > 0 %}
+                <details class="nav-details rounded-2xl {% if is_active %}bg-primary/5{% endif %}">
+                  <summary class="flex items-center justify-between px-4 py-3.5 cursor-pointer text-gray-600">
+                    <span>{{ link.title }}</span>
+                    <svg class="w-4 h-4 opacity-50 nav-details-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </summary>
+                  <div class="px-2 pb-2 space-y-1">
+                    {% if link.url != blank %}
+                      <a href="{{ link.url }}" class="block rounded-xl px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-primary">Tümü</a>
+                    {% endif %}
+                    {% for child in link.children %}
+                      <a href="{{ child.url }}" class="block rounded-xl px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary" {% if child.new_tab %}target="_blank"{% endif %}>{{ child.title }}</a>
+                    {% endfor %}
+                  </div>
+                </details>
+              {% else %}
+                <a
+                  href="{{ link.url }}"
+                  class="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 hover:text-primary transition-all {% if is_active %}text-primary bg-primary/5{% endif %}"
+                >
+                  <span>{{ link.title }}</span>
+                  <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </a>
+              {% endif %}
             {% endfor %}
           {% else %}
             <a
@@ -1128,21 +1185,20 @@
       // Global Add to Cart function
       window.addToCart = function (product, quantity = 1) {
         try {
-          const productId = product.id || product._id;
+          const item = window.CrafterStore ? window.CrafterStore.snapshot(product, quantity) : null;
+          const productId = (item && item.id) || product.id || product._id;
           if (!productId) return;
 
           let cart = JSON.parse(localStorage.getItem('cart') || '[]');
           const idx = cart.findIndex((i) => (i.id || i._id) === productId);
           if (idx !== -1) {
-            cart[idx].quantity += quantity;
+            cart[idx].quantity = (cart[idx].quantity || 1) + quantity;
           } else {
-            product.quantity = quantity;
-            product.id = productId; // ensure standard id field
-            cart.push(product);
+            cart.push(item || Object.assign({}, product, { id: productId, quantity: quantity }));
           }
           localStorage.setItem('cart', JSON.stringify(cart));
           updateGlobalCartBadge();
-          window.showToast?.('Ürün sepete eklendi!', 'success');
+          window.showToast?.('Ürün sepete eklendi.', 'success');
         } catch (e) {
           console.error(e);
         }

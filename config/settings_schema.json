@@ -109,6 +109,31 @@
             "id": "new_tab",
             "type": "checkbox",
             "label": "Yeni sekmede açılsın mı?"
+          },
+          {
+            "id": "children",
+            "type": "array",
+            "label": "Alt menü",
+            "info": "Kategori gibi bağlantılar. Doluysa menü öğesinin üzerine gelince açılır.",
+            "item_schema": [
+              {
+                "id": "title",
+                "type": "text",
+                "label": "Alt başlık",
+                "default": "Kategori"
+              },
+              {
+                "id": "url",
+                "type": "url",
+                "label": "URL Adresi",
+                "default": "/store"
+              },
+              {
+                "id": "new_tab",
+                "type": "checkbox",
+                "label": "Yeni sekmede açılsın mı?"
+              }
+            ]
           }
         ]
       },
@@ -314,15 +339,45 @@
       },
       {
         "type": "text",
-        "id": "store.banner_title",
-        "label": "Mağaza Banner Başlığı",
-        "default": "Mağazaya Hoş Geldiniz!"
+        "id": "store.kicker",
+        "label": "Mağaza üst etiketi",
+        "default": "Katalog"
       },
       {
         "type": "text",
+        "id": "store.banner_title",
+        "label": "Mağaza Banner Başlığı",
+        "default": "Mağaza"
+      },
+      {
+        "type": "textarea",
         "id": "store.banner_description",
         "label": "Mağaza Banner Açıklaması",
-        "default": "Sunucumuza destek olmak ve harika avantajlar elde etmek için kategorilerden birini seçin."
+        "default": "Oyun içi teslimat, dijital kod ve indirilebilir dosyalar aynı katalogda."
+      },
+      {
+        "type": "textarea",
+        "id": "store.server_intro",
+        "label": "Sunucu sayfası açıklaması",
+        "default": "Bu sunucuya teslim edilen ürünler burada. Dijital kod ve indirilebilir dosyaların sunucusu yoktur; onları mağaza kataloğundan süzebilirsin."
+      },
+      {
+        "type": "text",
+        "id": "store.type_in_game",
+        "label": "Oyuna teslim etiketi",
+        "default": "Oyuna teslim"
+      },
+      {
+        "type": "text",
+        "id": "store.type_digital",
+        "label": "Dijital kod etiketi",
+        "default": "Dijital kod"
+      },
+      {
+        "type": "text",
+        "id": "store.type_downloadable",
+        "label": "İndirilebilir etiketi",
+        "default": "İndirilebilir"
       }
     ]
   },

@@ -21,11 +21,29 @@
     {% endif %}
     
     <div class="flex-grow relative z-10">
+      {% assign game = server.game | default: 'minecraft' %}
+      <div class="text-xs font-black uppercase tracking-widest text-primary mb-3">
+        {% case game %}
+          {% when 'fivem' %}FiveM
+          {% when 'rust' %}Rust
+          {% when 'gmod' %}Garry's Mod
+          {% when 'cs2' %}CS2
+          {% when 'ark' %}ARK
+          {% when 'dayz' %}DayZ
+          {% when 'empyrion' %}Empyrion
+          {% when 'mtasa' %}MTA:SA
+          {% when 'samp' %}SA-MP
+          {% when 'forest' %}The Forest
+          {% when 'unturned' %}Unturned
+          {% when 'valheim' %}Valheim
+          {% else %}Minecraft
+        {% endcase %}
+      </div>
       <h1 class="text-3xl md:text-5xl font-black text-gray-900 mb-3 tracking-tight">
-        {{ server.name | default: 'Sunucuya Hoş Geldin' }}
+        {{ server.name | default: 'Sunucu' }}
       </h1>
       <p class="text-lg text-gray-500 font-medium max-w-3xl">
-        Aşağıdaki kategorilerden birini seçerek bu sunucuda kullanabileceğin özel eşyaları, yetkileri ve üyelikleri inceleyebilirsin.
+        {{ settings.store.server_intro | default: 'Bu sunucuya teslim edilen ürünler burada. Dijital kod ve indirilebilir dosyaların sunucusu yoktur; onları mağaza kataloğundan süzebilirsin.' }}
       </p>
     </div>
   </div>

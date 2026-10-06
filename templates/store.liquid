@@ -1,80 +1,66 @@
-<!-- MAĞAZA ANA SAYFASI -->
-<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-12">
-  <!-- Breadcrumb -->
+<div class="container max-w-[1400px] mx-auto px-4 mt-8 mb-24 space-y-10">
   <div class="flex items-center gap-2 text-sm font-bold text-gray-500 bg-white py-3 px-6 rounded-2xl w-fit shadow-sm border border-gray-100">
-    <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-      </svg>
-    </a>
+    <a href="/" class="hover:text-primary transition-colors">Ana sayfa</a>
     <span>/</span>
     <span class="text-gray-900">Mağaza</span>
   </div>
 
-  <!-- Mağaza Karşılama Banner -->
-  <div class="w-full bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
-    <div class="flex-grow z-10">
-      <h1 class="text-3xl md:text-5xl font-black text-gray-900 mb-3 tracking-tight">
-        {{ settings.store.banner_title | default: 'Mağazaya Hoş Geldiniz!' }}
+  <section class="relative overflow-hidden rounded-[2rem] bg-gray-950 text-white p-8 md:p-12">
+    <div class="relative z-10 max-w-2xl">
+      <p class="text-xs font-black uppercase tracking-[0.2em] text-white/50 mb-3">{{ settings.store.kicker | default: 'Katalog' }}</p>
+      <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-4">
+        {{ settings.store.banner_title | default: 'Mağaza' }}
       </h1>
-      <p class="text-lg text-gray-500 font-medium max-w-3xl">
-        {{
-          settings.store.banner_description
-          | default: 'Sunucumuza destek olmak ve harika avantajlar elde etmek için kategorilerden birini seçin.'
-        }}
+      <p class="text-lg text-white/70 font-medium">
+        {{ settings.store.banner_description | default: 'Oyun içi teslimat, dijital kod ve indirilebilir dosyalar aynı katalogda.' }}
       </p>
     </div>
     {% if settings.store.banner_image %}
-      <div class="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none hidden md:block">
-        <div class="absolute inset-0 bg-gradient-to-r from-white to-transparent z-10"></div>
-        <img src="{{ settings.store.banner_image }}" class="w-full h-full object-cover">
-      </div>
+      <img src="{{ settings.store.banner_image }}" alt="" class="absolute inset-y-0 right-0 hidden md:block w-1/2 h-full object-cover opacity-30">
     {% endif %}
-  </div>
+  </section>
 
-  <!-- Kategoriler (Sunucular) Başlığı -->
-  <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-6">Kategoriler</h3>
-
-  <!-- SUNUCU KARTLARI GRID -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% if servers and servers.size > 0 %}
-      {% for server in servers %}
-        <!-- Sunucu Kartı (Dinamik) -->
-        <a
-          href="/store/{{ server.slug }}"
-          class="relative w-full aspect-[2/1] md:h-[160px] md:aspect-auto rounded-3xl overflow-hidden group shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 block"
-        >
-          {% if server.image != blank %}
-            <img
-              src="{{ server.image }}"
-              alt="{{ server.name }}"
-              class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            >
-          {% else %}
-            <div class="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-200"></div>
-          {% endif %}
-
-          <!-- Yazı Okunabilirliği İçin İnce Gradyan -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent mix-blend-multiply group-hover:opacity-80 transition-opacity duration-300"
-          ></div>
-
-          <!-- Sunucu İsmi -->
-          <div class="relative z-10 w-full h-full flex items-center p-6 md:p-8">
-            <h4 class="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-lg group-hover:text-green-300 transition-colors">
-              {{ server.name | replace: ' ', '<br>' }}
-            </h4>
-          </div>
-        </a>
-      {% endfor %}
-    {% else %}
-      <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 bg-gray-50 rounded-3xl border border-gray-100">
-        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-        </svg>
-        <h3 class="text-xl font-bold text-gray-900 mb-2">Henüz Kategori Bulunmuyor</h3>
-        <p class="text-gray-500 text-sm">Şu an için mağazada listelenecek bir kategori (sunucu) eklenmemiş.</p>
+  {% if servers and servers.size > 0 %}
+    <section>
+      <h2 class="text-xl font-black text-gray-900 mb-4">Sunucular</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for server in servers %}
+          {% assign game = server.game | default: 'minecraft' %}
+          <a href="/store/{{ server.slug }}" class="group relative overflow-hidden rounded-3xl min-h-[150px] bg-gray-900 block">
+            {% if server.image != blank %}
+              <img src="{{ server.image }}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500">
+            {% endif %}
+            <div class="relative z-10 h-full p-6 flex flex-col justify-end">
+              <span class="text-[10px] font-black uppercase tracking-widest text-white/80 mb-2">
+                {% case game %}
+                  {% when 'fivem' %}FiveM
+                  {% when 'rust' %}Rust
+                  {% when 'gmod' %}Garry's Mod
+                  {% when 'cs2' %}CS2
+                  {% when 'ark' %}ARK
+                  {% when 'dayz' %}DayZ
+                  {% when 'empyrion' %}Empyrion
+                  {% when 'mtasa' %}MTA:SA
+                  {% when 'samp' %}SA-MP
+                  {% when 'forest' %}The Forest
+                  {% when 'unturned' %}Unturned
+                  {% when 'valheim' %}Valheim
+                  {% else %}Minecraft
+                {% endcase %}
+              </span>
+              <h3 class="text-2xl font-black text-white">{{ server.name }}</h3>
+            </div>
+          </a>
+        {% endfor %}
       </div>
-    {% endif %}
-  </div>
+    </section>
+  {% endif %}
+
+  {% render 'catalog-browser' %}
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.CrafterStore) window.CrafterStore.mountCatalog({});
+  });
+</script>

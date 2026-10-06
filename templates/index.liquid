@@ -256,6 +256,10 @@
           <div class="bg-white border border-gray-100 rounded-3xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group relative overflow-hidden">
             <!-- Product Badges -->
             <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
+              {% assign home_type = product.type | default: 'in_game' %}
+              <span class="bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg w-fit">
+                {% if home_type == 'digital' %}{{ settings.store.type_digital | default: 'Dijital kod' }}{% elsif home_type == 'downloadable' %}{{ settings.store.type_downloadable | default: 'İndirilebilir' }}{% else %}{{ settings.store.type_in_game | default: 'Oyuna teslim' }}{% endif %}
+              </span>
               {% if product.discountValue and product.discountValue > 0 %}
                 <span class="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg w-fit">
                   -{{ product.discountValue -}}
@@ -264,11 +268,13 @@
               {% endif %}
 
               <!-- Stok Durumu -->
-              {% if product.stock <= 0 %}
+              {% if home_type == 'in_game' and product.stock <= 0 %}
                 <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg flex items-center gap-1.5 w-fit">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   Sınırsız
                 </span>
+              {% elsif product.stock <= 0 %}
+                <span class="bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg w-fit">Tükendi</span>
               {% elsif product.stock <= 10 %}
                 <span class="bg-orange-50 text-orange-600 border border-orange-200 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg flex items-center gap-1.5 w-fit">
                   <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
